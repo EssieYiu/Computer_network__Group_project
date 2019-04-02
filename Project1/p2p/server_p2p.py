@@ -29,13 +29,14 @@ class Server:
 					connectionSocket.send(str.encode("You have previously registered."))
 			#update resources
 			elif request_from_client[0] == '2':
+				connectionSocket.send(str.encode('You are updating your resources'))
 				print('peer',addr[0],'updates its resources')
 				renew_str = connectionSocket.recv(4096)
 				renew_str = str(renew_str)
 				renew = renew_str.split(";")
 				RESOURCES[addr[0]] = renew 
 				print(RESOURCES[addr[0]])
-				connectionSocket.send(str.encode("Update resources successfully!"))
+				#connectionSocket.send(str.encode("Update resources successfully!"))
 			#download resources
 			elif request_from_client[0] == '3':
 				peer_have_resource = []
@@ -44,10 +45,10 @@ class Server:
 						if data == request_from_client[2]:
 							peer_have_resource.append(peer)
 				connectionSocket.send(json.dumps(peer_have_resource))
-			#chatting with sb
+			#chatting with sb get peers online
 			elif request_from_client[0] == '4':
-				online_peers_json = json.dumps(CONNCTION_LIST)
-				connectionSocket.send(online_peers_json)
+				online_peers = ";".join(CONNCTION_LIST)
+				connectionSocket.send(str.encode(online_peers))
 			elif request_from_client[0] == '5':
 				pass
 			connectionSocket.close()

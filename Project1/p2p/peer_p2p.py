@@ -1,11 +1,12 @@
 from socket import*
 import json
 import os
+import time
 import threading
 #SERVER_ADDR = '172.19.109.242'
-SERVER_ADDR = '172.19.42.0'
+SERVER_ADDR = '172.19.39.53'
 SERVER_PORT = 15000
-PEER_PORT = 10086
+PEER_PORT = 25000
 MEGABYTE = 1024*1024
 CHUNKSIZE = 50*MEGABYTE
 '''
@@ -31,17 +32,22 @@ class Peer:
 		clientSocket.send(str.encode(peer_info))
 		response_from_server = clientSocket.recv(4096)
 		print(response_from_server)
+		time.sleep(2)
 		clientSocket.close()
 	#as a client
 	def update_resource(self):
+		my_request = '2 updating resources'
 		path = os.getcwd()
 		own_resource = os.listdir(path)
 		clientSocket = socket(AF_INET,SOCK_STREAM)
 		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
-		own_resource = ";".join(own_resource)
-		clientSocket.send(str.encode(own_resource))
+		clientSocket.send(str.encode(my_request))
 		response_from_server = clientSocket.recv(4096)
 		print(str(response_from_server))
+		own_resource = ";".join(own_resource)
+		clientSocket.send(str.encode(own_resource))
+		#response_from_server = clientSocket.recv(4096)
+		#print(str(response_from_server))
 		clientSocket.close()
 
 	#as a client
@@ -67,10 +73,12 @@ class Peer:
 	def get_peers_online(self):
 		clientSocket = socket(AF_INET,SOCK_STREAM)
 		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
-		my_request = '3 get_peers_online'
+		my_request = '4 get_peers_online'
 		clientSocket.send(str.encode(my_request))
-		online_peers_json = clientSocket.recv(4096)
-		online_peers = json.loads(online_peers_json)
+		online_peers = clientSocket.recv(4096)
+		online_peers = str(online_peers)
+		online_peers = online_peers.split(";")
+		print('online peers are:',online_peers)
 		clientSocket.close()
 		return online_peers
 
@@ -226,7 +234,9 @@ class Peer:
 		outfile.close()
 
 if __name__ == '__main__':
-	my_peer = Peer('172.19.109.242',PEER_PORT)
+	my_addr = '172.19.39.53'
+	my_peer = Peer(my_addr,PEER_PORT)
 	my_peer.register()
-	my_peer.update_resource()
+	#my_peer.update_resource()
+	#my_peer.get_peers_online()
 	input()
