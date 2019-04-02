@@ -3,7 +3,8 @@ import json
 import os
 import threading
 #SERVER_ADDR = '172.19.109.242'
-SERVER_ADDR = '172.19.42.0'
+#SERVER_ADDR = '172.19.42.0'
+SERVER_ADDR = '192.168.199.102'
 SERVER_PORT = 15000
 PEER_PORT = 10086
 MEGABYTE = 1024*1024
@@ -30,7 +31,7 @@ class Peer:
 		peer_info = '1 '+str(self.ip)+' '+str(self.port)
 		clientSocket.send(str.encode(peer_info))
 		response_from_server = clientSocket.recv(4096)
-		print(response_from_server)
+		print(str(response_from_server))
 		clientSocket.close()
 	#as a client
 	def update_resource(self):
@@ -38,10 +39,13 @@ class Peer:
 		own_resource = os.listdir(path)
 		clientSocket = socket(AF_INET,SOCK_STREAM)
 		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
+		clientSocket.send(str.encode('2 update_resource'))
+		response_from_server = clientSocket.recv(4096)
+		print(response_from_server)
 		own_resource = ";".join(own_resource)
 		clientSocket.send(str.encode(own_resource))
-		response_from_server = clientSocket.recv(4096)
-		print(str(response_from_server))
+		#response_from_server = clientSocket.recv(4096)
+		#print(str(response_from_server))
 		clientSocket.close()
 
 	#as a client
@@ -226,7 +230,7 @@ class Peer:
 		outfile.close()
 
 if __name__ == '__main__':
-	my_peer = Peer('172.19.109.242',PEER_PORT)
+	my_peer = Peer('192.168.199.102',PEER_PORT)
 	my_peer.register()
 	my_peer.update_resource()
 	input()
