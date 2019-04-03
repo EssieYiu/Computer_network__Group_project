@@ -176,39 +176,29 @@ class Peer:
 	#as a client
 
 	def download_resource(self):
-
 		clientSocket = socket(AF_INET,SOCK_STREAM)
-
 		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
-
 		request_file = input('Please enter filename you want to download,notice that filename should not contain spaces')
-
-		my_request = '1 '+request_file
-
+		my_request = '3 '+request_file
 		clientSocket.send(str.encode(my_request))
-
-		peer_have_resource_json = connectionSocket.recv(4096)
-
-		peer_have_resource = json.loads(peer_have_resource_json)
-
+		peer_have_resource = clientSocket.recv(4096)
+		peer_have_resource = peer_have_resource.decode()
+		if len(peer_have_resource) == 0:
+			pass
+		else:
+			peer_have_resource = peer_have_resource.split(";")
+		print('peer_have_resource',peer_have_resource)
 		clientSocket.close()
 
-		if peer_have_resource.empty():
-
+		if len(peer_have_resource) == 0:
 			print('Sorry, the file does not exist in the peer system')
 
 		else:
-
 			if len(peer_have_resource) >= 2:
-
 				self.download_helper(request_file,peer_have_resource[0],1,2)
-
 				self.download_helper(request_file,peer_have_resource[1],2,2)
-
 			else:
-
 				self.download_helper(request_file,peer_have_resource[0],1,1)
-
 			self.combine_file(request_file)
 
 
@@ -470,5 +460,7 @@ if __name__ == '__main__':
 	my_peer.register()
 
 	my_peer.update_resource()
+
+	my_peer.download_resource()
 
 	input()

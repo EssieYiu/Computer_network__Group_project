@@ -6,7 +6,7 @@ RESOURCES=list(range(10))
 PEER_ID2ADDR =list(range(10))
 for i in range(10):
 	RESOURCES[i] = []
-	PEER_ID2ADDR = []
+	PEER_ID2ADDR[i] = []
 
 class Server:
 	def __init__(self):
@@ -35,7 +35,7 @@ class Server:
 					self.peer_num = self.peer_num + 1
 					back_info = 'Register_successfully!_Your_id_is '+str(self.peer_num)
 					connectionSocket.send(str.encode(back_info))
-					PEER_ID2ADDR[peer_num] = addr[0]
+					PEER_ID2ADDR[self.peer_num] = addr[0]
 				else:
 					connectionSocket.send(str.encode("You have previously registered."))
 			#update resources
@@ -59,10 +59,13 @@ class Server:
 				peer_have_resource = []
 				for i in range(10):
 					for data in RESOURCES[i]:
-						if data == request_from_client[2]:
+						if data == request_from_client[1]:
 							peer_have_resource.append(PEER_ID2ADDR[i])
-
-				connectionSocket.send(json.dumps(peer_have_resource))
+				if len(peer_have_resource) == 0:
+					peer_have_resource = ''
+				else:
+					peer_have_resource = ";".join(peer_have_resource)
+				connectionSocket.send(str.encode(peer_have_resource))
 			#chatting with sb get peers online
 			elif request_from_client[0] == '4':
 				online_peers = ";".join(CONNCTION_LIST)
