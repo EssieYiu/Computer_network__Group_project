@@ -219,3 +219,5 @@ class Peer:
 
 		outfile.close()
 
+if __name__ == '__man__':
+	my_peer = Peer('',PEER_PORT)

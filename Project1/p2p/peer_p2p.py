@@ -10,7 +10,7 @@ import threading
 
 SERVER_ADDR = '172.19.39.53'
 
-#SERVER_ADDR = '192.168.199.102'
+SERVER_ADDR = '192.168.199.102'
 
 SERVER_PORT = 15000
 
@@ -116,8 +116,8 @@ class Peer:
 			clientSocket.connect((my_friend,PEER_PORT))
 
 			#this should be a request
-
-			clientSocket.send("2 Hello! I'm chatting with you! If one of us say 'Bye!',the chatting will end.")
+			greeting = "2 Hello! I'm chatting with you! If one of us say 'Bye!',the chatting will end."
+			clientSocket.send(str.encode(greeting))
 
 			friend_response = clientSocket.recv(4096)
 
@@ -147,13 +147,14 @@ class Peer:
 
 		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
 
-		my_request = '3 get_peers_online'
+		my_request = '4 get_peers_online'
 
 		clientSocket.send(str.encode(my_request))
 
-		online_peers_json = clientSocket.recv(4096)
+		online_peers = clientSocket.recv(4096)
 
-		online_peers = json.loads(online_peers_json)
+		online_peers = online_peers.decode()
+		online_peers = online_peers.split(";")
 
 		clientSocket.close()
 
@@ -459,8 +460,9 @@ if __name__ == '__main__':
 
 	my_peer.register()
 
-	my_peer.update_resource()
+	#my_peer.update_resource()
 
-	my_peer.download_resource()
+	#my_peer.download_resource()
+	my_peer.listening_to_others()
 
 	input()

@@ -68,6 +68,7 @@ class Server:
 				connectionSocket.send(str.encode(peer_have_resource))
 			#chatting with sb get peers online
 			elif request_from_client[0] == '4':
+				print('someone is getting online_peers:',CONNCTION_LIST)
 				online_peers = ";".join(CONNCTION_LIST)
 				connectionSocket.send(str.encode(online_peers))
 			elif request_from_client[0] == '5':
