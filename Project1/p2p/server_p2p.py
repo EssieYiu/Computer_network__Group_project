@@ -17,9 +17,11 @@ class Server:
 		while True:
 			connectionSocket, addr = self.serverSocket.accept()
 			request_from_client = connectionSocket.recv(4096)
+			print('client addr is',addr)
 			print('request from client:',request_from_client)
-			request_from_client = str(request_from_client)
+			request_from_client = request_from_client.decode()
 			request_from_client = request_from_client.split(' ',2)
+			print('after split:',request_from_client)
 			#register
 			if request_from_client[0] == '1':
 				if addr[0] not in CONNCTION_LIST:
@@ -31,8 +33,9 @@ class Server:
 			elif request_from_client[0] == '2':
 				connectionSocket.send(str.encode('You are updating your resources'))
 				print('peer',addr[0],'updates its resources')
+				connectionSocket.send(str.encode('You are updating your resources'))
 				renew_str = connectionSocket.recv(4096)
-				renew_str = str(renew_str)
+				renew_str = renew_str.decode()
 				renew = renew_str.split(";")
 				RESOURCES[addr[0]] = renew 
 				print(RESOURCES[addr[0]])
@@ -52,6 +55,7 @@ class Server:
 			elif request_from_client[0] == '5':
 				pass
 			connectionSocket.close()
+			print('socket close')
 
 if __name__ == '__main__':
 	my_server = Server()
