@@ -2,6 +2,7 @@
 from socket import*
 import os
 SERVER_ADDR = '192.168.199.102'
+SERVER_ADDR = '172.19.39.53'
 PEER_PORT = 10086
 SERVER_PORT = 15000
 class Peer:
@@ -70,7 +71,7 @@ class Peer:
 
 if __name__ == '__main__':
 
-	my_peer = Peer('192.168.199.102',PEER_PORT)
+	my_peer = Peer('172.19.39.53',PEER_PORT)
 
 	#my_peer.register()
 

@@ -10,7 +10,7 @@ import threading
 
 SERVER_ADDR = '172.19.39.53'
 
-SERVER_ADDR = '192.168.199.102'
+#SERVER_ADDR = '192.168.199.102'
 
 SERVER_PORT = 15000
 
@@ -106,8 +106,9 @@ class Peer:
 	def chat_with_sb(self):
 
 		online_peers = self.get_peers_online()
+		print('friends online:',online_peers)
 
-		my_friend = raw_input('Please enter a friend to chat(ipv4 address)')
+		my_friend = input('Please enter a friend to chat(ipv4 address)')
 
 		if my_friend in online_peers:
 
@@ -123,9 +124,9 @@ class Peer:
 
 			while str(friend_response) != 'Bye!':
 
-				greeting = raw_input('Please enter what you want to say:')
+				greeting = input('Please enter what you want to say:')
 
-				clientSocket.send(greeting)
+				clientSocket.send(str.encode(greeting))
 
 				if str(greeting == 'Bye!'):
 
@@ -303,24 +304,25 @@ class Peer:
 	#as a server
 
 	def handle_chat(self,connectionSocket,con_addr):
+		print(con_addr,'is connecting with me')
+		print(con_addr[0],'is connected with you. Please enter your response. When you say "Bye!",the coversation ends.')
+		my_response = input()
 
-		my_response = raw_input(con_addr[0],'is connected with you. Please enter your response. When you say "Bye!",the coversation ends.')
-
-		self.peer_socket.send(my_response)
-
-		other_greeting = self.peer_socket.recv(4096)
-
+		connectionSocket.send(str.encode(my_response))
+		other_greeting = connectionSocket.recv(4096)
+		other_greeting = str(other_greeting.decode())
+		print('con_addr[0]:',other_greeting)
 		while str(other_greeting) != 'Bye!':
 
-			my_response = raw_input('Enter you response:')
+			my_response = input('Enter you response:')
 
-			self.peer_socket.send(my_response)
+			connectionSocket.send(str.encode(my_response))
 
-			if str(my_response) == 'Bye!':
-
+			if str(my_response.decode()) == 'Bye!':
 				break;
 
-			self.peer_socket.recv(4096)
+			connectionSocket.recv(4096)
+			print('con_addr[0]:',str(other_greeting.decode()))
 
 
 
@@ -336,13 +338,15 @@ class Peer:
 
 			connectionSocket, con_addr = self.peer_socket.accept()
 
-			request_from_others = self.peer_socket.recv(4096)
+			request_from_others = connectionSocket.recv(4096)
 
-			request_from_others = str(request_from_others)
+			request_from_others = str(request_from_others.decode())
 
 			request_from_others = request_from_others.split(' ',3)
+			print('request from others:',request_from_others)
 
-			if request_from_others[0] == 1:
+			if request_from_others[0] == '1':
+				print('I am going to handle download')
 
 				filename = request_from_others[1]
 
@@ -354,11 +358,12 @@ class Peer:
 
 			#chat with others
 
-			elif request_from_others[0] == 2:
+			elif request_from_others[0] == '2':
+				print('I am going to handle chat')
 
 				self.handle_chat(connectionSocket,con_addr)
 
-			elif request_from_others[0] == 3:
+			elif request_from_others[0] == '3':
 
 				self.handle_file_transport(connectionSocket,con_addr)
 
@@ -456,7 +461,7 @@ class Peer:
 
 if __name__ == '__main__':
 
-	my_peer = Peer('192.168.199.102',PEER_PORT)
+	my_peer = Peer('172.19.39.53',PEER_PORT)
 
 	my_peer.register()
 
