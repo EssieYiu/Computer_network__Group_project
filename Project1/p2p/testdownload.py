@@ -4,12 +4,35 @@ class Peer:
 	def __init__(self,peer_ip,peer_port):
 		self.ip = peer_ip
 		self.port = peer_port
-		self.peer_socket = socket(AF_INET,SOCK_STREAM)
-		self.peer_socket.bind(('',peer_port))
-		self.listen(5)
+		#self.peer_socket = socket(AF_INET,SOCK_STREAM)
+		#self.peer_socket.bind(('',peer_port))
+		#self.listen(5)
 
-	def __del__(self):
-		self.peer_socket.close()
+	def download_resource(self):
+		clientSocket = socket(AF_INET,SOCK_STREAM)
+		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
+		request_file = input('Please enter filename you want to download,notice that filename should not contain spaces')
+		my_request = '3 '+request_file
+		clientSocket.send(str.encode(my_request))
+		peer_have_resource = clientSocket.recv(4096)
+		peer_have_resource = peer_have_resource.decode()
+		if len(peer_have_resource) == 0:
+			pass
+		else:
+			peer_have_resource = peer_have_resource.split(";")
+		print('peer_have_resource',peer_have_resource)
+		clientSocket.close()
+
+		if len(peer_have_resource) == 0:
+			print('Sorry, the file does not exist in the peer system')
+
+		else:
+			if len(peer_have_resource) >= 2:
+				self.download_helper(request_file,peer_have_resource[0],1,2)
+				self.download_helper(request_file,peer_have_resource[1],2,2)
+			else:
+				self.download_helper(request_file,peer_have_resource[0],1,1)
+			self.combine_file(request_file)
 
 	def download_helper(self,filename,dst_ip,seq,total):
 
@@ -59,82 +82,6 @@ class Peer:
 
 		download_socket.close()
 
-	def handle_download(self,connectionSocket,conaddr,filename,seq,total):
-
-		filenum = self.split_file(filename)
-
-		if filenum == None:
-
-			return
-
-		group_member = math.ceil(filenum/total)
-
-		start_num = group_member*(seq-1)+1
-
-		end_num = group_member*seq
-
-		if end_num > filenum:
-
-			end_num = filenum
-
-		i = start_num
-
-		while i <= end_num:
-
-			new_file_name = filename+'_part_'+_str(i)
-
-			f = open(new_file_name,'rb')
-
-			while True:
-
-				content = f.read(4096)
-
-				if content:
-
-					connectionSocket.send(content)
-
-				else:
-
-					f.close()
-
-					break
-
-			print(new_file_name,'sent successful')
-
-	def listening_to_others(self):
-
-		while True:
-
-			connectionSocket, con_addr = self.peer_socket.accept()
-
-			request_from_others = self.peer_socket.recv(4096)
-
-			request_from_others = str(request_from_others)
-
-			request_from_others = request_from_others.split(' ',3)
-
-			if request_from_others[0] == 1:
-
-				filename = request_from_others[1]
-
-				seq = request_from_others[2]
-
-				total = request_from_others[3]
-
-				self.handle_download(connectionSocket,con_addr,filename,seq,total)
-
-			#chat with others
-
-			elif request_from_others[0] == 2:
-
-				self.handle_chat(connectionSocket,con_addr)
-
-			elif request_from_others[0] == 3:
-
-				self.handle_file_transport(connectionSocket,con_addr)
-
-			connectionSocket.close()
-
 
 	def sending_out_request(self):
 
@@ -154,13 +101,6 @@ class Peer:
 
 				self.download_resource()
 
-			elif act == 2:
-
-				#self.chat_with_sb()
-
-			elif act == 3:
-
-				pass
 	def split_file(self,filename):
 
 		try:
@@ -221,3 +161,4 @@ class Peer:
 
 if __name__ == '__man__':
 	my_peer = Peer('',PEER_PORT)
+	my_peer.sending_out_request()

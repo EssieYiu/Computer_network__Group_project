@@ -30,20 +30,21 @@ class Peer:
 			#this should be a request
 			greeting = "2 Hello! I'm chatting with you! If one of us say 'Bye!',the chatting will end."
 			clientSocket.send(str.encode(greeting))
-
+			print("Please wait for your friend's response")
 			friend_response = clientSocket.recv(4096)
-
-			while str(friend_response) != 'Bye!':
-
+			friend_response = str(friend_response.decode())
+			print('my friend',my_friend,":",friend_response)
+			while friend_response != 'Bye!':
 				greeting = input('Please enter what you want to say:')
 
 				clientSocket.send(str.encode(greeting))
 
-				if str(greeting == 'Bye!'):
-
+				if greeting == 'Bye!':
 					break;
-
-				friend_response = clientSocket.recv()
+				print("Please wait for your friend's response")
+				friend_response = clientSocket.recv(4096)
+				friend_response = str(friend_response.decode())
+				print('my friend:',my_friend,":",friend_response)
 
 		else:
 

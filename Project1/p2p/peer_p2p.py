@@ -119,20 +119,21 @@ class Peer:
 			#this should be a request
 			greeting = "2 Hello! I'm chatting with you! If one of us say 'Bye!',the chatting will end."
 			clientSocket.send(str.encode(greeting))
-
+			print("Please wait for your friend's response")
 			friend_response = clientSocket.recv(4096)
-
-			while str(friend_response) != 'Bye!':
-
+			friend_response = str(friend_response.decode())
+			print('my friend',my_friend,":",friend_response)
+			while friend_response != 'Bye!':
 				greeting = input('Please enter what you want to say:')
 
 				clientSocket.send(str.encode(greeting))
 
-				if str(greeting == 'Bye!'):
-
+				if greeting == 'Bye!':
 					break;
-
-				friend_response = clientSocket.recv()
+				print("Please wait for your friend's response")
+				friend_response = clientSocket.recv(4096)
+				friend_response = str(friend_response.decode())
+				print('my friend:',my_friend,":",friend_response)
 
 		else:
 
@@ -264,7 +265,8 @@ class Peer:
 		if filenum == None:
 
 			return
-
+		if seq == 1:
+			
 		group_member = math.ceil(filenum/total)
 
 		start_num = group_member*(seq-1)+1
@@ -306,23 +308,24 @@ class Peer:
 	def handle_chat(self,connectionSocket,con_addr):
 		print(con_addr,'is connecting with me')
 		print(con_addr[0],'is connected with you. Please enter your response. When you say "Bye!",the coversation ends.')
+		print('Enter your response:')
 		my_response = input()
 
 		connectionSocket.send(str.encode(my_response))
+		print("Please wait for your friend's response")
 		other_greeting = connectionSocket.recv(4096)
 		other_greeting = str(other_greeting.decode())
 		print('con_addr[0]:',other_greeting)
-		while str(other_greeting) != 'Bye!':
+		while other_greeting != 'Bye!':
 
 			my_response = input('Enter you response:')
-
 			connectionSocket.send(str.encode(my_response))
-
-			if str(my_response.decode()) == 'Bye!':
+			if my_response == 'Bye!':
 				break;
-
-			connectionSocket.recv(4096)
-			print('con_addr[0]:',str(other_greeting.decode()))
+			print("Please wait for your friend's response")
+			other_greeting = connectionSocket.recv(4096)
+			other_greeting = str(other_greeting.decode())
+			print('con_addr[0]:',other_greeting)
 
 
 
@@ -465,7 +468,7 @@ if __name__ == '__main__':
 
 	my_peer.register()
 
-	#my_peer.update_resource()
+	my_peer.update_resource()
 
 	#my_peer.download_resource()
 	my_peer.listening_to_others()
