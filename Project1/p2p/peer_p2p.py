@@ -163,22 +163,12 @@ class Peer:
 		clientSocket.close()
 
 		return online_peers
-
-
-
-	def handle_peer(self):
-		try:
-			thread.start_new_thread(self.listening_to_others)
-			thread.start_new_thread(self.sending_out_request)
-		except:
-			print('Error: unable to start thread')
 		
-
 	#as a client
-
 	def download_resource(self):
 		clientSocket = socket(AF_INET,SOCK_STREAM)
 		clientSocket.connect((SERVER_ADDR,SERVER_PORT))
+		print('download')
 		request_file = input('Please enter filename you want to download,notice that filename should not contain spaces')
 		my_request = '3 '+request_file
 		clientSocket.send(str.encode(my_request))
@@ -390,7 +380,7 @@ class Peer:
 			act = input()
 
 			if act == '1':
-
+				print('download')
 				self.download_resource()
 
 			elif act == '2':
