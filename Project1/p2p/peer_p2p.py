@@ -3,14 +3,15 @@ from socket import*
 import json
 
 import os
-
+import math
 import threading
 
 #SERVER_ADDR = '172.19.109.242'
 
-SERVER_ADDR = '172.19.39.53'
+#SERVER_ADDR = '172.19.39.53'
 
 #SERVER_ADDR = '192.168.199.102'
+SERVER_ADDR = '192.168.199.205'
 
 SERVER_PORT = 15000
 
@@ -66,8 +67,9 @@ class Peer:
 		response_from_server = response_from_server.decode()
 		response_from_server = response_from_server.split(' ',2)
 		if self.id == -1:
+			print('into this if:')
 			self.id = int(response_from_server[1])
-		print(str(response_from_server))
+		print(" ".join(response_from_server))
 		print('my id is',self.id)
 		clientSocket.close()
 
@@ -198,11 +200,11 @@ class Peer:
 
 		else:
 			if len(peer_have_resource) >= 2:
-				self.download_helper(request_file,peer_have_resource[0],1,2)
+				filenum = self.download_helper(request_file,peer_have_resource[0],1,2)
 				self.download_helper(request_file,peer_have_resource[1],2,2)
 			else:
-				self.download_helper(request_file,peer_have_resource[0],1,1)
-			self.combine_file(request_file)
+				filenum = self.download_helper(request_file,peer_have_resource[0],1,1)
+			self.combine_file(request_file,filenum)
 
 
 
@@ -213,11 +215,12 @@ class Peer:
 		download_socket.connect((dst_ip,PEER_PORT))
 
 		download_socket.send(str.encode('1 '+filename+' '+str(seq)+' of '+str(total)))
-
+		
 		filenum = download_socket.recv(4096)
-
+		filenum = filenum.decode()
+		print('filenum',filenum,' type:',type(filenum))
 		filenum = int(filenum)
-
+		download_socket.send(str.encode("ok"))
 		group_member = math.ceil(filenum/total)
 
 		start_num = group_member*(seq-1)+1
@@ -249,11 +252,11 @@ class Peer:
 					f.close()
 
 					break;
-
+			i = i+1
 			print('file',new_file_name,'write successful')
 
 		download_socket.close()
-
+		return filenum
 
 
 	#as a server
@@ -265,8 +268,10 @@ class Peer:
 		if filenum == None:
 
 			return
-		if seq == 1:
-			
+
+		connectionSocket.send(str.encode(str(filenum)))
+		connectionSocket.recv(4096)
+
 		group_member = math.ceil(filenum/total)
 
 		start_num = group_member*(seq-1)+1
@@ -281,7 +286,7 @@ class Peer:
 
 		while i <= end_num:
 
-			new_file_name = filename+'_part_'+_str(i)
+			new_file_name = filename+'_part_'+str(i)
 
 			f = open(new_file_name,'rb')
 
@@ -298,7 +303,7 @@ class Peer:
 					f.close()
 
 					break
-
+			i = i+1
 			print(new_file_name,'sent successful')
 
 
@@ -345,7 +350,7 @@ class Peer:
 
 			request_from_others = str(request_from_others.decode())
 
-			request_from_others = request_from_others.split(' ',3)
+			request_from_others = request_from_others.split(' ',4)
 			print('request from others:',request_from_others)
 
 			if request_from_others[0] == '1':
@@ -354,9 +359,9 @@ class Peer:
 				filename = request_from_others[1]
 
 				seq = request_from_others[2]
-
-				total = request_from_others[3]
-
+				seq = int(seq)
+				total = request_from_others[4]
+				total = int(total)
 				self.handle_download(connectionSocket,con_addr,filename,seq,total)
 
 			#chat with others
@@ -388,18 +393,19 @@ class Peer:
 
 			act = input()
 
-			if act == 1:
+			if act == '1':
 
 				self.download_resource()
 
-			elif act == 2:
+			elif act == '2':
 
 				self.chat_with_sb()
 
-			elif act == 3:
+			elif act == '3':
 
 				pass
-
+			else:
+				print('Sorry, this is invalid')
 		
 
 	def split_file(self,filename):
@@ -446,9 +452,9 @@ class Peer:
 
 		outfile = open(filename,'wb')
 
-		for i in filenum:
+		for i in range(filenum):
 
-			file_split_name = filename+'_part_'+i+1
+			file_split_name = filename+'_part_'+str(i+1)
 
 			infile = open(file_split_name,'rb')
 
@@ -464,7 +470,7 @@ class Peer:
 
 if __name__ == '__main__':
 
-	my_peer = Peer('172.19.39.53',PEER_PORT)
+	my_peer = Peer('192.168.199.205',PEER_PORT)
 
 	my_peer.register()
 
