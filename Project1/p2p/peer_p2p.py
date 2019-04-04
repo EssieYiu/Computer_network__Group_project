@@ -167,16 +167,12 @@ class Peer:
 
 
 	def handle_peer(self):
-
-		threads = []
-
-		t1 = threading.Thread(self.listening_to_others)
-
-		t2 = threading.Thread(self.sending_out_request)
-
-		threads.append(t1)
-
-		threads.append(t2)
+		try:
+			thread.start_new_thread(self.listening_to_others)
+			thread.start_new_thread(self.sending_out_request)
+		except:
+			print('Error: unable to start thread')
+		
 
 	#as a client
 
@@ -473,10 +469,15 @@ if __name__ == '__main__':
 	my_peer = Peer('192.168.199.205',PEER_PORT)
 
 	my_peer.register()
-
 	my_peer.update_resource()
-
+	try:
+		t1 = threading.Thread(target = my_peer.listening_to_others)
+		t2 = threading.Thread(target = my_peer.sending_out_request)
+	except:
+		print('Error:Unable to start thread')
+	t1.start()
+	t2.start()
+	#my_peer.handle_peer()
 	#my_peer.download_resource()
-	my_peer.listening_to_others()
-
+	#my_peer.listening_to_others()
 	input()
