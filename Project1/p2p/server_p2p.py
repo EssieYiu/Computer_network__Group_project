@@ -27,7 +27,7 @@ class Server:
 			print('request from client:',request_from_client)
 			request_from_client = request_from_client.decode()
 			request_from_client = request_from_client.split(' ',2)
-			print('after split:',request_from_client)
+			#print('after split:',request_from_client)
 			#register
 			if request_from_client[0] == '1':
 				if addr[0] not in CONNCTION_LIST:
@@ -48,11 +48,11 @@ class Server:
 				renew_str = connectionSocket.recv(4096)
 				renew_str = renew_str.decode()
 				renew = renew_str.split(";")
-				print('renew',renew)
+				#print('renew',renew)
 				#index = self.ip2long(addr[0])
-				print('client id',client_id)
+				#print('client id',client_id)
 				RESOURCES[client_id] = renew 
-				print(RESOURCES[client_id])
+				#print(RESOURCES[client_id])
 				#connectionSocket.send(str.encode("Update resources successfully!"))
 			#download resources
 			elif request_from_client[0] == '3':
@@ -74,7 +74,7 @@ class Server:
 			elif request_from_client[0] == '5':
 				pass
 			connectionSocket.close()
-			print('socket close')
+			#print('socket close')
 
 	def ip2long(self,ip):
 		iplist = ip.split(".")

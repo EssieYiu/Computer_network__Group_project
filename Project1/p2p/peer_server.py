@@ -8,7 +8,7 @@ import threading
 #SERVER_ADDR = '172.19.39.53'
 
 #SERVER_ADDR = '192.168.199.102'
-SERVER_ADDR = '192.168.199.205'
+SERVER_ADDR = '192.168.199.102'
 
 SERVER_PORT = 15000
 
@@ -24,7 +24,7 @@ each peer has its own ip_addr and port to listen to
 others' requests
 '''
 
-class Peer_server:
+class Peer:
 
 	def __init__(self,peer_ip,peer_port):
 
@@ -126,6 +126,7 @@ class Peer_server:
 	def listening_to_others(self):
 		print('I am listening to others')
 		while True:
+
 			connectionSocket, con_addr = self.peer_socket.accept()
 
 			request_from_others = connectionSocket.recv(4096)
@@ -199,7 +200,6 @@ class Peer_server:
 
 if __name__ == '__main__':
 	my_addr = '192.168.199.102'
-	my_peer = Peer_server(my_addr,PEER_PORT)
-	print('I am peer',my_addr)
+	my_peer = Peer(my_addr,PEER_PORT)
 	my_peer.listening_to_others()
 	input()
