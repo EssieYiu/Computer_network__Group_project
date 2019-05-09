@@ -2,12 +2,18 @@ from socket import*
 import json
 SERVER_PORT = 15000
 CONNCTION_LIST=[]
-RESOURCES=[]
+RESOURCES=list(range(10))
+PEER_ID2ADDR =list(range(10))
+for i in range(10):
+	RESOURCES[i] = []
+	PEER_ID2ADDR[i] = []
+
 class Server:
 	def __init__(self):
 		self.serverSocket = socket(AF_INET, SOCK_STREAM)
 		self.serverSocket.bind(('',SERVER_PORT))
 		self.serverSocket.listen(5)
+		self.peer_num = 0
 		print('Server is listening')
 		
 	def __del__(self):
@@ -21,40 +27,60 @@ class Server:
 			print('request from client:',request_from_client)
 			request_from_client = request_from_client.decode()
 			request_from_client = request_from_client.split(' ',2)
-			print('after split:',request_from_client)
+			#print('after split:',request_from_client)
 			#register
 			if request_from_client[0] == '1':
 				if addr[0] not in CONNCTION_LIST:
 					CONNCTION_LIST.append(addr[0])
-					connectionSocket.send(str.encode("Register successfully!"))
+					self.peer_num = self.peer_num + 1
+					back_info = 'Register_successfully!_Your_id_is '+str(self.peer_num)
+					connectionSocket.send(str.encode(back_info))
+					PEER_ID2ADDR[self.peer_num] = addr[0]
 				else:
 					connectionSocket.send(str.encode("You have previously registered."))
 			#update resources
 			elif request_from_client[0] == '2':
 				print('peer',addr[0],'updates its resources')
 				connectionSocket.send(str.encode('You are updating your resources'))
+				client_id = connectionSocket.recv(4096)
+				client_id = int(client_id.decode())
+				connectionSocket.send(str.encode('I have known your id'))
 				renew_str = connectionSocket.recv(4096)
 				renew_str = renew_str.decode()
 				renew = renew_str.split(";")
-				RESOURCES[addr[0]] = renew 
-				print(RESOURCES[addr[0]])
+				print('id:',client_id)
+				print('renew',renew)
+				RESOURCES[client_id] = renew 
+				print(RESOURCES[client_id])
 				#connectionSocket.send(str.encode("Update resources successfully!"))
 			#download resources
 			elif request_from_client[0] == '3':
 				peer_have_resource = []
-				for peer in CONNCTION_LIST:
-					for data in RESOURCES[peer]:
-						if data == request_from_client[2]:
-							peer_have_resource.append(peer)
-				connectionSocket.send(json.dumps(peer_have_resource))
-			#chatting with sb
+				for i in range(10):
+					for data in RESOURCES[i]:
+						if data == request_from_client[1]:
+							peer_have_resource.append(PEER_ID2ADDR[i])
+				if len(peer_have_resource) == 0:
+					peer_have_resource = ''
+				else:
+					peer_have_resource = ";".join(peer_have_resource)
+				connectionSocket.send(str.encode(peer_have_resource))
+			#chatting with sb get peers online
 			elif request_from_client[0] == '4':
-				online_peers_json = json.dumps(CONNCTION_LIST)
-				connectionSocket.send(online_peers_json)
+				print('someone is getting online_peers:',CONNCTION_LIST)
+				online_peers = ";".join(CONNCTION_LIST)
+				connectionSocket.send(str.encode(online_peers))
 			elif request_from_client[0] == '5':
 				pass
 			connectionSocket.close()
-			print('socket close')
+			#print('socket close')
+
+	def ip2long(self,ip):
+		iplist = ip.split(".")
+		result = 0
+		for i in range(4):
+			result = result + int(iplist[i])*256**(3-i)
+		return result
 
 if __name__ == '__main__':
 	my_server = Server()
