@@ -5,10 +5,10 @@ class Node():
     def __init__(self,name='A',IP="127.0.0.1", port1=50500,port2=50501):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        sck_input.bind((IP,port1))
+        self.sck_input.bind((IP,port1))
         #发套接字
         self.sck_output=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        sck_output.bind((IP,port2))
+        self.sck_output.bind((IP,port2))
         
         self.ip=IP  #ip
         self.neighbour={}   #邻居->link cost
@@ -21,25 +21,25 @@ class Node():
         # message:string
         message=input("Please enter the message you want to send:")
         destIP=input("Please enter the destination IP:")
-        packed_message=pack_message(self,message,destIP)#打包消息
+        packed_message=self.pack_message(message,destIP)#打包消息
 
         #如果destIP就是邻居，直接发送
         if destIP in self.neighbour.keys():
-            sck_output.sendto(packed_message,(destIP,recvPort))
+            self.sck_output.sendto(packed_message,(destIP,recvPort))
         #不是邻居，查找路由表，送到下一跳node
         else:
             nextNode=self.table[destIP]
-            sck_output.sendto(packed_message,(nextNode,recvPort))
+            self.sck_output.sendto(packed_message,(nextNode,recvPort))
             print("Firstly, send message to next node:%s"%nextNode)
 
         print("Send message to %s"%destIP)
 
     def recv(self):
-        data,(fhost,fport)=sck_input.recvfrom(BUFSIZE)
+        data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
         #接收到的是message
         omessage=data.decode()
         if omessage[0]=='1':
-            tup=unpack_message(omessage)
+            tup=self.unpack_message(omessage)
             message=tup[2]
             destIP=tup[1]
             srcIP=tup[0]
@@ -55,8 +55,8 @@ class Node():
         elif omessage[0]=='0':
             DVneighbour=json.loads(omessage[1:])
             print("* Received DV message from %s"%fhost)
-            if recompute_DV(self,fhost,DVneighbour)==True:
-                exchange_DV(self)
+            if self.recompute_DV(fhost,DVneighbour)==True:
+                self.exchange_DV()
 
 
 
@@ -82,7 +82,7 @@ class Node():
         DVinfo=json.dumps(self.DV)
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
-            sck_output.sendto(('0'+DVinfo).encode(),(neigh,recvPort))
+            self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,recvPort))
 
         print("* Send DV message to all neighbours!")
 
@@ -95,7 +95,7 @@ class Node():
             zero=addition[:need-1]#后面要补的0
             dIP=destIP+'.'+zero
         srcIP=self.ip
-        if len(srcip)<15:
+        if len(srcIP)<15:
             need=15-len(srcIP)-1
             zero=addition[:need-1]
             sIP=srcIP+'.'+zero
