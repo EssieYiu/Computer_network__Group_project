@@ -1,3 +1,9 @@
+import random
+IP1 = ""
+IP2 = ""
+IP3 = ""
+IP4 = ""
+IP5 = ""
 class TopoGraph:
     def __init__(self,n,e):
         self.N=n
@@ -9,7 +15,7 @@ class TopoGraph:
 
     #获取某个节点的所有邻居以及与邻居的linkcost
     def get_allLink(self,name):
-        ip=name_ip[name]
+        ip=self.name_ip[name]
         allLink={}  #节点->cost
         for link,cost in self.link_cost.items():
             if ip in link:
@@ -17,10 +23,19 @@ class TopoGraph:
                 allLink[n]=cost
         return allLink
 
-    def change_linkCost(self,A,B,new_cost):
-        ipA=name_ip[A]
-        ipB=name_ip[B]
-        self.link_cost
+    def initialize_graph(self):
+        self.link_cost[(IP1,IP3)] = 34
+        self.link_cost[(IP1,IP5)] = 34
+        self.link_cost[(IP2,IP5)] = 34
+        self.link_cost[(IP2,IP4)] = 34
+        self.link_cost[(IP3,IP4)] = 34
+
+    def change_linkCost(self):
+        self.link_cost[(IP1,IP3)] = random.randint(0,50)
+        self.link_cost[(IP1,IP5)] = random.randint(0,50)
+        self.link_cost[(IP2,IP5)] = random.randint(0,50)
+        self.link_cost[(IP2,IP4)] = random.randint(0,50)
+        self.link_cost[(IP3,IP4)] = random.randint(0,50)
 
 
 
