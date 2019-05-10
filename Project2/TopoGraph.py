@@ -1,9 +1,12 @@
 import random
+IP1 = ""
 IP2 = ""
 IP3 = ""
 IP4 = ""
 IP5 = ""
 class TopoGraph:
+    def __init__(self,e,n):
+        self.N = n
         self.E=e
         #名字和ip的对应关系
         self.name_ip={}
@@ -12,7 +15,7 @@ class TopoGraph:
 
     #获取某个节点的所有邻居以及与邻居的linkcost
     def get_allLink(self,name):
-        ip=self.name_ip[name]
+        my_ip=self.name_ip[name]
         allLink={}  #节点->cost
         for link,cost in self.link_cost.items():
             if my_ip in link:
