@@ -1,14 +1,16 @@
 import socket
 import json
 BUFSIZE=1024
+RECVPORT = 20000
+SENDPORT = 30000
 class Node():
-    def __init__(self,name='A',IP="127.0.0.1", port1=50500,port2=50501):
+    def __init__(self,name='A',IP="127.0.0.1"):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.sck_input.bind((IP,port1))
+        self.sck_input.bind((IP,RECVPORT))
         #发套接字
         self.sck_output=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.sck_output.bind((IP,port2))
+        self.sck_output.bind((IP,SENDPORT))
         
         self.ip=IP  #ip
         self.neighbour={}   #邻居->link cost
@@ -25,11 +27,11 @@ class Node():
 
         #如果destIP就是邻居，直接发送
         if destIP in self.neighbour.keys():
-            self.sck_output.sendto(packed_message,(destIP,recvPort))
+            self.sck_output.sendto(packed_message,(destIP,RECVPORT))
         #不是邻居，查找路由表，送到下一跳node
         else:
             nextNode=self.table[destIP]
-            self.sck_output.sendto(packed_message,(nextNode,recvPort))
+            self.sck_output.sendto(packed_message,(nextNode,RECVPORT))
             print("Firstly, send message to next node:%s"%nextNode)
 
         print("Send message to %s"%destIP)
@@ -48,7 +50,7 @@ class Node():
             else:#目的地不是自己
                 #查路由表，转发
                 nextIP=self.table[destIP]
-                self.sck_output.sendto(message,(nextIP,recvPort))
+                self.sck_output.sendto(message,(nextIP,RECVPORT))
                 print("* Help sent message from %s"%srcIP)
 
         #接收到的是邻居发来的DV信息
@@ -82,12 +84,13 @@ class Node():
         DVinfo=json.dumps(self.DV)
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
-            self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,recvPort))
+            self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,RECVPORT))
 
         print("* Send DV message to all neighbours!")
 
 
     def pack_message(self,message,destIP):
+        '''
         # IP无论如何都用15位表示，不够的后面补'.0000'
         addition='00000000'
         if len(destIP)<15:
@@ -102,11 +105,20 @@ class Node():
 
         packed_message='1'+sIP+dIP+message   #最前面的'1'代表发送的信息为消息 0 1:15 16:30
         return packed_message.encode()
+        '''
+        
+        message_to_send = '1 '+self.ip+' '+destIP+' '+message
+        return message_to_send
 
     def unpack_message(self,message):
+        '''
         #解读消息
         tup=(message[1:15],message[16:30],message[31:]) #srcIP,destIP,message
         return tup
+        '''
+        tup = message[1:].split(' ',2)
+        return tup
+
 
 
 
