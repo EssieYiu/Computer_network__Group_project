@@ -75,18 +75,21 @@ class Node(object):
         #此处针对一个邻居的DV变化
         change=False
         for key,value in self.DV:   #key为目的ip，value为从自己到目的地的cost
+            next=table[key]
             for neighbour,linkCost in self.neighbour:   #neighbour为邻居的ip，linkCost为自己到邻居的cost
                 DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
                 if value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost
                     value=linkCost+DVneighbour[key]
+                    next=neighbour  #下一跳节点变为这个邻居
                     change=True
-
+            table[key]=next #目的地，下一跳节点变化
+        
         if change==True:
             print("* My DV has changed!")
         return change
 
     #交换DV信息
-    def exchange_DV(self):
+    def send_DV(self):
         DVinfo=json.dumps(self.DV)
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
