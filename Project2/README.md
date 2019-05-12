@@ -31,12 +31,13 @@
 - neighbour:指示了到某邻居的路径花销。dict类型，建立了邻居ip和路径权重的一一对应关系
 - table:路由表，字典类型，建立了目的地址和下一条地址的一一对应关系
 - DV:指示到某个节点的最佳路径开销，字典类型，建立了节点ip和路径开销的一一对应关系
+- DV_neighbour:list类型；存储邻居的DV信息；依次为A,B,C,D,E，不是邻居的置为空的字典。
 - changable_route:指示自己能够修改的路径。list类型，存储的是某些邻居的ip，表示它能够修改自己到这个邻居的路径权重
     类的函数：
 - send_message：发送消息，（可否修改用于处理所有消息类型？对不同消息类型做出不同反应？）
 - recv：接受消息（可否修改用于发送所有消息类型？
-- recompute_DV:
-- exchange_DV：
+- recompute_DV:收到邻居发来的DV信息，重新计算DV，并得出新的路由表（self.table)
+- send_DV：给邻居发送自己的DV信息
 - pack_message:是否可以整合进send_message中？
 - unpack_message：是否可以整合到需要处理消息的函数中？
 - change_route：修改路径权重，并通知对应邻居。遍历自己的changeable_route列表，使用随机函数生成新的路径权重，将自身的neighbour中的路径权重信息更新，并且使用套接字向对应邻居发送路径权重变化的消息。
@@ -52,3 +53,5 @@
 - node_changeable_route:直接返回对应ip的可修改路径列表（表现为邻居ip）即可
 
 ## 遇到的问题
+- 需要周期性调用send_DV，从而达到邻居之间交换DV信息的效果
+- 一个全局变量记录IP，list类型即可，依次index为A,B,C,D,E（node和TopoGraph都用这个全局变量？）
