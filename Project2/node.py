@@ -63,24 +63,24 @@ class Node(object):
             print("* Received DV message from %s"%fhost)
             index=IP.find(fhost)
             self.DV_neighbour[index]=DVneighbour
-            if self.recompute_DV(fhost,DVneighbour)==True:
-                self.exchange_DV()
+            self.recompute_DV(fhost,DVneighbour)
+            #if self.recompute_DV(fhost,DVneighbour)==True:
+                #self.exchange_DV()
 
 
 
     #重新计算DV信息
-    def recompute_DV(self,neigh,DVneigh):
-        #neigh:邻居的IP
-        #DVneigh:邻居的DV信息 key是邻居可达node的IP，value是路径开销
+    def recompute_DV(self):
         #返回:当自己的DV改变了，返回True
-
+        #此处针对一个邻居的DV变化
         change=False
-        cost=self.neighbour[neigh]  #到邻居的开销
-        for key,value in DVneigh:
-            if self.DV.get(key,1000000)>cost+value:
-                self.DV[key]=cost+value
-                change=True
-        
+        for key,value in self.DV:   #key为目的ip，value为从自己到目的地的cost
+            for neighbour,linkCost in self.neighbour:   #neighbour为邻居的ip，linkCost为自己到邻居的cost
+                DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
+                if value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost
+                    value=linkCost+DVneighbour[key]
+                    change=True
+
         if change==True:
             print("* My DV has changed!")
         return change
@@ -96,23 +96,6 @@ class Node(object):
 
 
     def pack_message(self,message,destIP):
-        '''
-        # IP无论如何都用15位表示，不够的后面补'.0000'
-        addition='00000000'
-        if len(destIP)<15:
-            need=15-len(destIP)-1#要补的0的个数
-            zero=addition[:need-1]#后面要补的0
-            dIP=destIP+'.'+zero
-        srcIP=self.ip
-        if len(srcIP)<15:
-            need=15-len(srcIP)-1
-            zero=addition[:need-1]
-            sIP=srcIP+'.'+zero
-
-        packed_message='1'+sIP+dIP+message   #最前面的'1'代表发送的信息为消息 0 1:15 16:30
-        return packed_message.encode()
-        '''
-        
         message_to_send = '1 '+self.ip+' '+destIP+' '+message
         return message_to_send
 
