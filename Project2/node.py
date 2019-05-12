@@ -4,6 +4,7 @@ import random
 BUFSIZE=1024
 RECVPORT = 20000
 SENDPORT = 30000
+IP=["","","","",""]   #依次存储A,B,C,D,E的ip
 class Node(object):
     def __init__(self,name='A',IP="127.0.0.1"):
         #收套接字
@@ -17,7 +18,7 @@ class Node(object):
         self.neighbour={}   #邻居->link cost
         self.table={}   #路由表：目的node->应该去的下一跳node
         self.DV={}  #Distance vector：node->最佳路径开销
-
+        self.DV_neighbour=[{},{},{},{},{}]    #存储邻居的DV信息(即邻居的self.DV字典），为list，依次为A,B,C,D,E
         self.changeable_route =[] #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
 
     #发送消息
@@ -60,6 +61,8 @@ class Node(object):
         elif omessage[0]=='0':
             DVneighbour=json.loads(omessage[1:])
             print("* Received DV message from %s"%fhost)
+            index=IP.find(fhost)
+            self.DV_neighbour[index]=DVneighbour
             if self.recompute_DV(fhost,DVneighbour)==True:
                 self.exchange_DV()
 
