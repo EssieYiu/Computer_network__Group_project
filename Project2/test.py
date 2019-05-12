@@ -33,3 +33,12 @@ if __name__ == "__main__":
     print('packed is:',pack_message)
     unpack = unpack_message(packed)
     print('unpacked is:',unpack)
+
+
+
+class node(object):
+    def __init__:
+        #除了类中原来有的收发套接字以外
+        self.changeable_route = []
+        self.route_corresponding_neibor = {} #上面的changeable route->对应路径所连接neibor的ip地址
+        

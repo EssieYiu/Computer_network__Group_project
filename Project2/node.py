@@ -1,9 +1,10 @@
 import socket
 import json
+import random
 BUFSIZE=1024
 RECVPORT = 20000
 SENDPORT = 30000
-class Node():
+class Node(object):
     def __init__(self,name='A',IP="127.0.0.1"):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -16,6 +17,8 @@ class Node():
         self.neighbour={}   #邻居->link cost
         self.table={}   #路由表：目的node->应该去的下一跳node
         self.DV={}  #Distance vector：node->最佳路径开销
+
+        self.changeable_route =[] #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
 
     #发送消息
     def send_message(self):
@@ -119,6 +122,14 @@ class Node():
         tup = message[1:].split(' ',2)
         return tup
 
+    #仅仅修改了路径权重和通知邻居，没有调用重新计算DV的函数
+    def change_route(self):
+        #neibor为ip地址
+        for neibor in self.changeable_route:
+            new_weight = random.randint(0,50)
+            self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
+            message = '2 route_weight_change '+str(new_weight)  #!!!信息格式未规范，需要后续修改
+            self.sck_output.sendto(message,neibor) #告知这个邻居
 
 
 
