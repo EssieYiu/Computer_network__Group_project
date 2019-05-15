@@ -5,6 +5,7 @@ BUFSIZE=1024
 RECVPORT = 20000
 SENDPORT = 30000
 IP=["","","","",""]   #依次存储A,B,C,D,E的ip
+INFINITE = 1000000
 class Node(object):
     def __init__(self,name='A',IP="127.0.0.1"):
         #收套接字
@@ -75,14 +76,22 @@ class Node(object):
         #此处针对一个邻居的DV变化
         change=False
         for key,value in self.DV:   #key为目的ip，value为从自己到目的地的cost
-            next=table[key]
+            next=self.table[key]
             for neighbour,linkCost in self.neighbour:   #neighbour为邻居的ip，linkCost为自己到邻居的cost
                 DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
+
+                #add 处理宕掉的情况，若next恰好为邻居，且在邻居的DV表中发现到目的节点的路径为正无穷，那么说明路不通，
+                # 在暂时未找到其他路径的情况下，将自己的也修改为正无穷
+                if next == neighbour and DVneighbour[key] >= INFINITE:
+                    value = INFINITE
+                #add end
+
                 if value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost
                     value=linkCost+DVneighbour[key]
                     next=neighbour  #下一跳节点变为这个邻居
                     change=True
-            table[key]=next #目的地，下一跳节点变化
+            self.neighbour[key] = value #add 将修改的value值写回去
+            self.table[key]=next #目的地，下一跳节点变化
         
         if change==True:
             print("* My DV has changed!")
