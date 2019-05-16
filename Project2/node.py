@@ -5,7 +5,8 @@ BUFSIZE=1024
 RECVPORT = 20000
 SENDPORT = 30000
 IP=["","","","",""]   #依次存储A,B,C,D,E的ip
-INFINITE = 1000000
+ALL="ABCDE"
+INFINITE=1000000
 class Node(object):
     def __init__(self,name='A',IP="127.0.0.1"):
         #收套接字
@@ -27,7 +28,8 @@ class Node(object):
         # destIP:string
         # message:string
         message=input("Please enter the message you want to send:")
-        destIP=input("Please enter the destination IP:")
+        dest=input("Please enter the destination(A/B/C/D/E):")
+        destIP=IP[ALL.find(dest)]
         packed_message=self.pack_message(message,destIP)#打包消息
 
         #如果destIP就是邻居，直接发送
@@ -35,16 +37,18 @@ class Node(object):
             self.sck_output.sendto(packed_message,(destIP,RECVPORT))
         #不是邻居，查找路由表，送到下一跳node
         else:
-            nextNode=self.table[destIP]
+            nextIP=self.table[destIP]
+            nextNode=ALL[IP.find(nextIP)]
             self.sck_output.sendto(packed_message,(nextNode,RECVPORT))
-            print("Firstly, send message to next node:%s"%nextNode)
+            print("Firstly, send message to next node %s: %s"%(nextNode,nextIP))
 
-        print("Send message to %s"%destIP)
+        print("Send message to %s: %s"%(dest,destIP))
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
-        #接收到的是message
+        index=IP.find(fhost)
         omessage=data.decode()
+        #接收到的是message
         if omessage[0]=='1':
             tup=self.unpack_message(omessage)
             message=tup[2]
@@ -62,18 +66,34 @@ class Node(object):
         elif omessage[0]=='0':
             DVneighbour=json.loads(omessage[1:])
             print("* Received DV message from %s"%fhost)
-            index=IP.find(fhost)
+            
             self.DV_neighbour[index]=DVneighbour
-            self.recompute_DV(fhost,DVneighbour)
+            self.recompute_DV()
             #if self.recompute_DV(fhost,DVneighbour)==True:
                 #self.exchange_DV()
 
+        #接收到的是邻居发来的link cost改变,更新self.neighbour
+        elif omessage[0]=='2':
+            new_weight=omessage[1:].split(' ',1)    #获得新的权重 ！！！还没修改好
+            self.neighbour[fhost]=new_weight    #更新
+            self.recompute_DV() #重计算
+
+        #接收到邻居发来的
+        elif omessage[0]=='3':
+            self.neighbour[fhost]=INFINITE
+            #self.DV_neighbour[index]={}
+            self.recompute_DV()
 
 
     #重新计算DV信息
+    #重新计算DV信息
+
     def recompute_DV(self):
+
         #返回:当自己的DV改变了，返回True
+
         #此处针对一个邻居的DV变化
+
         change=False
         for key,value in self.DV:   #key为目的ip，value为从自己到目的地的cost
             next=self.table[key]
@@ -85,19 +105,21 @@ class Node(object):
                 if next == neighbour and DVneighbour[key] >= INFINITE:
                     value = INFINITE
                 #add end
-
                 if value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost
                     value=linkCost+DVneighbour[key]
                     next=neighbour  #下一跳节点变为这个邻居
                     change=True
+
             self.neighbour[key] = value #add 将修改的value值写回去
-            self.table[key]=next #目的地，下一跳节点变化
-        
+            self.table[key]=next #目的地，下一跳节点变化   
         if change==True:
+
             print("* My DV has changed!")
+
         return change
 
     #交换DV信息
+    #需要周期性调用
     def send_DV(self):
         DVinfo=json.dumps(self.DV)
         for neigh in self.neighbour.keys():
@@ -127,7 +149,10 @@ class Node(object):
             new_weight = random.randint(0,50)
             self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
             message = '2 route_weight_change '+str(new_weight)  #!!!信息格式未规范，需要后续修改
-            self.sck_output.sendto(message,neibor) #告知这个邻居
+            self.sck_output.sendto(message.encode(),(neibor,RECVPORT)) #告知这个邻居
 
-
+    def down(self):
+        for neibor in self.DV_neighbour:    #告诉所有邻居我down了
+           message='3'
+           self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
 
