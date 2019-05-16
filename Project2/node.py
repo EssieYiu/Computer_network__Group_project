@@ -36,7 +36,7 @@ class Node(object):
                 self.DV[dest]=self.neighbour[dest]
                 self.table[dest]=dest
             else:
-                self.DV[dest]=INFINITE  #目的地不是邻居
+                self.DV[dest]=0 #目的地不是邻居，cost设为0，意味着还没有找到怎么去
                 self.table[dest]="DK"
 
         print("self.DV:")
@@ -127,7 +127,7 @@ class Node(object):
                 if next == neighbour and DVneighbour[key] >= INFINITE:
                     value = INFINITE
                 #add end
-                if value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost
+                if value==0 or value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost 或者 还没有找到路
                     value=linkCost+DVneighbour[key]
                     next=neighbour  #下一跳节点变为这个邻居
                     change=True
