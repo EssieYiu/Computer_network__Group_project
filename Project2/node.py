@@ -2,9 +2,9 @@ import socket
 import json
 import random
 BUFSIZE=1024
-RECVPORT = 20000
-SENDPORT = 30000
-IP=["192.168.199.131","172.26.81.151","3","4","5"]   #依次存储A,B,C,D,E的ip
+RECVPORT = 8080
+SENDPORT = 8081
+IP=["172.19.112.247","127.0.0.1","127.0.0.1","127.0.0.1","127.0.0.1"]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
 INFINITE=1000000
 class Node(object):
@@ -28,6 +28,7 @@ class Node(object):
         print(self.neighbour)
         print(self.ip)
         print(self.down)
+       
         #初始化DV和table
         for dest in IP: #对于所有目的地ip
             if dest==self.ip:   #目的地是自己
@@ -36,8 +37,8 @@ class Node(object):
                 self.DV[dest]=self.neighbour[dest]
                 self.table[dest]=dest
             else:
-                self.DV[dest]=0 #目的地不是邻居，cost设为0，意味着还没有找到怎么去
-                self.table[dest]="DK"
+                self.DV[dest]=INFINITE #目的地不是邻居，cost设为0，意味着还没有找到怎么去
+                self.table[dest]="127.0.0.1"
 
         print("self.DV:")
         print(self.DV)
@@ -46,7 +47,7 @@ class Node(object):
         print("self.table:")
         print(self.table)
         print("* __init__ end！")
-
+         
     #发送消息
     def send_message(self):
         # destIP:string
@@ -55,7 +56,7 @@ class Node(object):
         dest=input("Please enter the destination(A/B/C/D/E):")
         while dest==self.name:
             dest=input("You can't send message to yourself, please enter another destination: ")
-        destIP=IP[ALL.find(dest)]
+        destIP=IP[ALL.index(dest)]
         packed_message=self.pack_message(message,destIP)#打包消息
 
         #如果destIP就是邻居，直接发送
@@ -64,8 +65,8 @@ class Node(object):
         #不是邻居，查找路由表，送到下一跳node
         else:
             nextIP=self.table[destIP]
-            nextNode=ALL[IP.find(nextIP)]
-            self.sck_output.sendto(packed_message,(nextNode,RECVPORT))
+            nextNode=ALL[IP.index(nextIP)]
+            self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
             print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
 
         print("* Send message to %s: %s"%(dest,destIP))
@@ -115,28 +116,29 @@ class Node(object):
     #重新计算DV信息
     def recompute_DV(self):
         #返回:当自己的DV改变了，返回True
-        #此处针对一个邻居的DV变化
+        #前提是要有邻居的DV信息
         change=False
-        for key,value in self.DV.items():   #key为目的ip，value为从自己到目的地的cost  
-            next=self.table.get(key,'G')
+        for key in self.DV.keys():   #key为目的ip，value为从自己到目的地的cost  
+            next=self.table.get(key,'DK')
+            value=INFINITE
             for neighbour,linkCost in self.neighbour.items():   #neighbour为邻居的ip，linkCost为自己到邻居的cost
                 DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
 
                 #add 处理宕掉的情况，若next恰好为邻居，且在邻居的DV表中发现到目的节点的路径为正无穷，那么说明路不通，
                 # 在暂时未找到其他路径的情况下，将自己的也修改为正无穷
-                if next == neighbour and DVneighbour[key] >= INFINITE:
-                    value = INFINITE
+                #if next == neighbour and DVneighbour[key] >= INFINITE:
+                    #value = INFINITE
                 #add end
-                if value==0 or value>linkCost+DVneighbour[key]: #当前path cost>到邻居cost+邻居到目的地cost 或者 还没有找到路
+                if value>linkCost+DVneighbour.get(key,0): #当前path cost>到邻居cost+邻居到目的地cost
                     value=linkCost+DVneighbour[key]
                     next=neighbour  #下一跳节点变为这个邻居
                     change=True
 
-            self.neighbour[key] = value #add 将修改的value值写回去
+            self.DV[key] = value #add 将修改的value值写回去
             self.table[key]=next #目的地，下一跳节点变化   
         if change==True:
-
             print("* My DV has changed!")
+
         print(self.DV)
         return change
 
@@ -153,7 +155,7 @@ class Node(object):
 
     def pack_message(self,message,destIP):
         message_to_send = '1 '+self.ip+' '+destIP+' '+message
-        return message_to_send
+        return message_to_send.encode()
 
     def unpack_message(self,message):
         #解读消息
