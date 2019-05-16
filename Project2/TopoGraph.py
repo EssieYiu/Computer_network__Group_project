@@ -1,15 +1,17 @@
 import random
-IP1 = ""
-IP2 = ""
-IP3 = ""
-IP4 = ""
-IP5 = ""
+#IP=["172.26.5.44","172.26.81.151","3","4","5"]
+A= "172.26.5.44"
+B= "172.26.81.151"
+C = "3"
+D= "4"
+E = "5"
 class TopoGraph(object):
     def __init__(self):
         #self.N = n
         #self.E=e
         #名字和ip的对应关系
-        self.name_ip={'A':IP1,'B':IP2,'C':IP3,'D':IP4,'E':IP5}
+        #x=input("Enter ip:")
+        self.name_ip={'A':A,'B':B,'C':C,'D':D,'E':E}
         #边和cost的对应关系
         self.link_cost={}
         self.ip_changeable_route = {} #ip->list[nei1,nei2...],IP地址到list的映射关系，其中list存储邻居ip，表示它能修改到此邻居的路径权重
@@ -22,20 +24,24 @@ class TopoGraph(object):
             if my_ip in link:
                 neigh_ip=(link[0] if link[0]!=my_ip else link[1]) #邻居的ip
                 allLink[neigh_ip]=cost
+
         return allLink
 
     def initialize_graph(self):
-        self.link_cost[(IP1,IP3)] = 34
-        self.link_cost[(IP1,IP4)] = 34
-        self.link_cost[(IP1,IP5)] = 34
-        self.link_cost[(IP2,IP5)] = 34
-        self.link_cost[(IP2,IP4)] = 34
-        self.link_cost[(IP3,IP4)] = 34
-        self.ip_changeable_route[IP1] = [IP4,IP5]
-        self.ip_changeable_route[IP2] = []
-        self.ip_changeable_route[IP3] = [IP1,IP4]
-        self.ip_changeable_route[IP4] = [IP2]
-        self.ip_changeable_route[IP5] = [IP2]
+        self.link_cost[(A,C)] = 34
+        self.link_cost[(A,D)] = 34
+        self.link_cost[(A,E)] = 34
+        self.link_cost[(B,E)] = 34
+        self.link_cost[(B,D)] = 34
+        self.link_cost[(C,D)] = 34
+        self.ip_changeable_route[A] = [D,E]
+        self.ip_changeable_route[B] = []
+        self.ip_changeable_route[C] = [A,D]
+        self.ip_changeable_route[D] = [B]
+        self.ip_changeable_route[E] = [B]
+
+        
+        print(self.link_cost)
 
     def node_changeable_route(self,node_ip):
         return self.ip_changeable_route[node_ip]
