@@ -8,7 +8,7 @@ IP=["","","","",""]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
 INFINITE=1000000
 class Node(object):
-    def __init__(self,name='A',IP="127.0.0.1"):
+    def __init__(self,name='A',IP="127.0.0.1",neigh={},down=False):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.sck_input.bind((IP,RECVPORT))
@@ -17,11 +17,12 @@ class Node(object):
         self.sck_output.bind((IP,SENDPORT))
         
         self.ip=IP  #ip
-        self.neighbour={}   #邻居->link cost
+        self.neighbour=neigh   #邻居->link cost
         self.table={}   #路由表：目的node->应该去的下一跳node
         self.DV={}  #Distance vector：node->最佳路径开销
         self.DV_neighbour=[{},{},{},{},{}]    #存储邻居的DV信息(即邻居的self.DV字典），为list，依次为A,B,C,D,E
         self.changeable_route =[] #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
+        self.Down=down
 
     #发送消息
     def send_message(self):
@@ -74,7 +75,7 @@ class Node(object):
 
         #接收到的是邻居发来的link cost改变,更新self.neighbour
         elif omessage[0]=='2':
-            new_weight=omessage[1:].split(' ',1)    #获得新的权重 ！！！还没修改好
+            new_weight=omessage[1:].split(' ',2)    #获得新的权重 ！！！还没修改好
             self.neighbour[fhost]=new_weight    #更新
             self.recompute_DV() #重计算
 
@@ -87,13 +88,9 @@ class Node(object):
 
     #重新计算DV信息
     #重新计算DV信息
-
     def recompute_DV(self):
-
         #返回:当自己的DV改变了，返回True
-
         #此处针对一个邻居的DV变化
-
         change=False
         for key,value in self.DV:   #key为目的ip，value为从自己到目的地的cost
             next=self.table[key]
@@ -115,7 +112,7 @@ class Node(object):
         if change==True:
 
             print("* My DV has changed!")
-
+            print(self.DV)
         return change
 
     #交换DV信息
@@ -134,11 +131,8 @@ class Node(object):
         return message_to_send
 
     def unpack_message(self,message):
-        '''
         #解读消息
-        tup=(message[1:15],message[16:30],message[31:]) #srcIP,destIP,message
-        return tup
-        '''
+
         tup = message[1:].split(' ',2)
         return tup
 
