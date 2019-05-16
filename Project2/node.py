@@ -4,25 +4,48 @@ import random
 BUFSIZE=1024
 RECVPORT = 20000
 SENDPORT = 30000
-IP=["","","","",""]   #依次存储A,B,C,D,E的ip
+IP=["192.168.199.131","172.26.81.151","3","4","5"]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
 INFINITE=1000000
 class Node(object):
-    def __init__(self,name='A',IP="127.0.0.1",neigh={},down=False):
+    def __init__(self,name='A',ip="127.0.0.1",neigh={},down=False):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.sck_input.bind((IP,RECVPORT))
+        self.sck_input.bind((ip,RECVPORT))
         #发套接字
         self.sck_output=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.sck_output.bind((IP,SENDPORT))
+        self.sck_output.bind((ip,SENDPORT))
         
-        self.ip=IP  #ip
+        self.name=name
+        self.ip=ip #ip
         self.neighbour=neigh   #邻居->link cost
         self.table={}   #路由表：目的node->应该去的下一跳node
         self.DV={}  #Distance vector：node->最佳路径开销
         self.DV_neighbour=[{},{},{},{},{}]    #存储邻居的DV信息(即邻居的self.DV字典），为list，依次为A,B,C,D,E
         self.changeable_route =[] #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
-        self.Down=down
+        self.down=down
+
+        print(self.neighbour)
+        print(self.ip)
+        print(self.down)
+        #初始化DV和table
+        for dest in IP: #对于所有目的地ip
+            if dest==self.ip:   #目的地是自己
+                continue
+            if dest in self.neighbour.keys():   #目的地是邻居，cost就是相连链路代价
+                self.DV[dest]=self.neighbour[dest]
+                self.table[dest]=dest
+            else:
+                self.DV[dest]=INFINITE  #目的地不是邻居
+                self.table[dest]="DK"
+
+        print("self.DV:")
+        print(self.DV)
+        print("self.neighbour:")
+        print(self.neighbour)
+        print("self.table:")
+        print(self.table)
+        print("* __init__ end！")
 
     #发送消息
     def send_message(self):
@@ -30,6 +53,8 @@ class Node(object):
         # message:string
         message=input("Please enter the message you want to send:")
         dest=input("Please enter the destination(A/B/C/D/E):")
+        while dest==self.name:
+            dest=input("You can't send message to yourself, please enter another destination: ")
         destIP=IP[ALL.find(dest)]
         packed_message=self.pack_message(message,destIP)#打包消息
 
@@ -41,9 +66,9 @@ class Node(object):
             nextIP=self.table[destIP]
             nextNode=ALL[IP.find(nextIP)]
             self.sck_output.sendto(packed_message,(nextNode,RECVPORT))
-            print("Firstly, send message to next node %s: %s"%(nextNode,nextIP))
+            print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
 
-        print("Send message to %s: %s"%(dest,destIP))
+        print("* Send message to %s: %s"%(dest,destIP))
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
@@ -92,9 +117,9 @@ class Node(object):
         #返回:当自己的DV改变了，返回True
         #此处针对一个邻居的DV变化
         change=False
-        for key,value in self.DV:   #key为目的ip，value为从自己到目的地的cost
-            next=self.table[key]
-            for neighbour,linkCost in self.neighbour:   #neighbour为邻居的ip，linkCost为自己到邻居的cost
+        for key,value in self.DV.items():   #key为目的ip，value为从自己到目的地的cost  
+            next=self.table.get(key,'G')
+            for neighbour,linkCost in self.neighbour.items():   #neighbour为邻居的ip，linkCost为自己到邻居的cost
                 DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
 
                 #add 处理宕掉的情况，若next恰好为邻居，且在邻居的DV表中发现到目的节点的路径为正无穷，那么说明路不通，
@@ -112,7 +137,7 @@ class Node(object):
         if change==True:
 
             print("* My DV has changed!")
-            print(self.DV)
+        print(self.DV)
         return change
 
     #交换DV信息
