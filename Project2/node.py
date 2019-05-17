@@ -34,7 +34,7 @@ class Node(object):
                 self.table[dest]=dest
             else:
                 self.DV[dest]=INFINITE #目的地不是邻居，cost设为0，意味着还没有找到怎么去
-                self.table[dest]="127.0.0.1"
+                self.table[dest]="DK"
 
         print("self.DV:",self.DV)
         print("self.neighbour:",self.neighbour)
@@ -48,8 +48,8 @@ class Node(object):
         # message:string
         message=input("Please enter the message you want to send:")
         dest=input("Please enter the destination(A/B/C/D/E):")
-        while dest==self.name:
-            dest=input("You can't send message to yourself, please enter another destination: ")
+        while dest==self.name or dest not in ALL:
+            dest=input("Error! Please enter another destination: ")
         destIP=IP[ALL.index(dest)]
         packed_message=self.pack_message(message,destIP)#打包消息
 
@@ -57,34 +57,31 @@ class Node(object):
         nextNode=ALL[IP.index(nextIP)]
         cost=self.DV[destIP]
         if cost==INFINITE:
-           print("Cannot reach the destination, send failed!")
+           print("* Cannot reach the destination, send failed!\n")
         else:
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
             if destIP!=nextIP:
                 print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
-            print("* Send message to %s: %s"%(dest,destIP))
+            print("* Send message to %s: %s\n"%(dest,destIP))
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
         index=IP.index(fhost)
         omessage=data.decode()
-        print(omessage)
+        
         #接收到的是message
         if omessage[0]=='1':           
             tup=self.unpack_message(omessage)
-            print("tup")
-            print(tup)
             message=tup[3]
             destIP=tup[2]
-
             srcIP=tup[1]
             if destIP==self.ip:#目的地就是自己
-                print("* Message from %s: %s"%(srcIP,message))
+                print("* Message from %s: %s\n"%(srcIP,message))
             else:#目的地不是自己
                 #查路由表，转发
                 nextIP=self.table[destIP]
                 self.sck_output.sendto(data,(nextIP,RECVPORT))
-                print("* Help sent message from %s"%srcIP)
+                print("* Help sent message src:%s dest:%s\n"%(srcIP,destIP))
 
         #接收到的是邻居发来的DV信息
         elif omessage[0]=='0':
@@ -93,17 +90,16 @@ class Node(object):
             print("* Received DV message from %s"%fhost)
             
             self.DV_neighbour[index]=DVneighbour
-            print("Receive DVneighbour:")
-            print(DVneighbour)
+            print("Receive DVneighbour:",DVneighbour)
             self.recompute_DV()
             #if self.recompute_DV(fhost,DVneighbour)==True:
                 #self.exchange_DV()
 
         #接收到的是邻居发来的link cost改变,更新self.neighbour
-        elif omessage[0]=='2':
-            new_weight=(omessage.split(' ',2))[2]   #获得新的权重 ！！！还没修改好
-            print("debug:new weight:",new_weight)
-            self.neighbour[fhost]=int(new_weight)    #更新
+        elif omessage[0]=='2' or omessage[0]=='4':
+            new_weight=int((omessage.split(' ',2))[2])    #获得新的权重 ！！
+            print("new_weight",new_weight)
+            self.neighbour[fhost]=new_weight    #更新
             self.recompute_DV() #重计算
 
         #接收到邻居发来的
@@ -127,14 +123,14 @@ class Node(object):
                 if not DVneighbour:
                     continue
                 #add 处理宕掉的情况，若next恰好为邻居，且在邻居的DV表中发现到目的节点的路径为正无穷，那么说明路不通，
-                # 在暂时未找到其他路径的情况下，将自己的也修改为正无穷
+                # 在暂时未找到其他路径的情况下，将自己的也修改为正无穷 
                 #if next == neighbour and DVneighbour[key] >= INFINITE:
                     #value = INFINITE
                 #add end
                 if value>linkCost+DVneighbour.get(key,0): #当前path cost>到邻居cost+邻居到目的地cost
                     value=linkCost+DVneighbour.get(key,0)
                     next=neigh  #下一跳节点变为这个邻居
-                    change=True
+                    
 
             self.DV[key] = value #add 将修改的value值写回去
             self.table[key]=next #目的地，下一跳节点变化   
@@ -172,9 +168,22 @@ class Node(object):
             self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
             message = '2 route_weight_change '+str(new_weight)  #!!!信息格式未规范，需要后续修改
             self.sck_output.sendto(message.encode(),(neibor,RECVPORT)) #告知这个邻居
+        self.recompute_DV()
+        print("* Some link cost has changed!")
+  
 
     def go_down(self):
-        for neibor in self.DV_neighbour:    #告诉所有邻居我down了
+        for neibor in self.neighbour.keys():    #告诉所有邻居我down了
            message='3'
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
+        print("* Down!")
+
+    def recover(self):
+        for neibor in self.neighbour.keys():    #告诉所有邻居我back了
+           new_weight = random.randint(0,50)
+           self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
+           message = '4 route_recover '+str(new_weight)  #!!!信息格式未规范，需要后续修改
+           self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
+        self.recompute_DV()
+        print("* Recover!")
 
