@@ -12,15 +12,19 @@ def sendDV_period(node):
 def change_period(node):
     while 1:
         time.sleep(30)
+        lock.acquire()
         node.change_route()
         print("after change neighbour:",node.neighbour)
         print("DV:",node.DV)
+        lock.release()
 def sendMessage(node):
     while 1:
         node.send_message()
 def recv(node):
     while 1:
+        lock.acquire()
         node.recv()
+        lock.release()
 def downAndrecover(node):
     time.sleep(60)
     if node.down==True:
@@ -41,6 +45,7 @@ my_node = Node(my_name,my_ip,neighbour,changeable,down)
 my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
 my_node.DV['127.0.0.1']=1000000
 my_thread=[]
+lock=threading.RLock()
     #线程共用的：my_node的sck_output
 
     #1.周期性发送DV消息
@@ -50,7 +55,7 @@ my_thread.append(DVthread)
 #DVthread.start()
 
     #2.接收
-    #涉及帮忙转发:sendto
+    #recv:sendto、recompute
 Rthread=threading.Thread(target=recv,args=(my_node,))
 my_thread.append(Rthread)
 #Rthread.start()
@@ -62,7 +67,7 @@ my_thread.append(Sthread)
 #Sthread.start()
    
     #4.周期性更改链路代价
-    #change_route:sendto
+    #change_route:sendto、recompute_DV
 Cthread=threading.Thread(target=change_period,args=(my_node,))
 my_thread.append(Cthread)
 #Cthread.start()
@@ -79,6 +84,8 @@ for thread in my_thread:
 
 
     
+
+
 
 
 
