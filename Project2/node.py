@@ -131,7 +131,8 @@ class Node(object):
                     value=linkCost+DVneighbour.get(key,0)
                     next=neigh  #下一跳节点变为这个邻居
                     
-
+            if self.DV[key]!=value:
+                change=True
             self.DV[key] = value #add 将修改的value值写回去
             self.table[key]=next #目的地，下一跳节点变化   
         if change==True:
@@ -148,7 +149,7 @@ class Node(object):
             #给每一位邻居发送自己的DV信息
             self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,RECVPORT))
         #print(self.DV)
-        print("* Send DV message to all neighbours!")
+        print("\n* Send DV message to all neighbours!")
 
 
     def pack_message(self,message,destIP):
