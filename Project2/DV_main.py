@@ -13,8 +13,8 @@ def change_period(node):
         
     #my_ip = input('Please enter your ip address')
     #my_name = input('Please enter your name')
-my_ip="172.19.112.247"
-my_name='A'
+my_ip="192.168.199.205"
+my_name='D'
 Graph = TopoGraph()
 Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
