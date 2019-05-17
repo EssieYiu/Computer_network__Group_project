@@ -73,7 +73,7 @@ class Node(object):
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
-        index=IP.find(fhost)
+        index=IP.index(fhost)
         omessage=data.decode()
         #接收到的是message
         if omessage[0]=='1':
@@ -172,7 +172,7 @@ class Node(object):
             message = '2 route_weight_change '+str(new_weight)  #!!!信息格式未规范，需要后续修改
             self.sck_output.sendto(message.encode(),(neibor,RECVPORT)) #告知这个邻居
 
-    def down(self):
+    def go_down(self):
         for neibor in self.DV_neighbour:    #告诉所有邻居我down了
            message='3'
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
