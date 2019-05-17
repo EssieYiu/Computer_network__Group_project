@@ -4,6 +4,7 @@ import threading
 import time
 def sendDV_period(node):
     while 1:
+        print(node.neighbour)
         node.send_DV()
         time.sleep(10)
 def change_period(node):
@@ -18,14 +19,15 @@ def recv(node):
         node.recv()
     #my_ip = input('Please enter your ip address')
     #my_name = input('Please enter your name')
-my_ip="192.168.199.131"
-my_name='A'
+my_ip="192.168.199.205"
+my_name='D'
 Graph = TopoGraph()
 Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
+#print(neighbour)
 down=Graph.get_down(my_name)
 my_node = Node(my_name,my_ip,neighbour,down)
-my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
+#my_node.neighbour={'192.168.199.102':34,'192.168.199.131':34}
 my_thread=[]
     #线程共用的：my_node的sck_output
 

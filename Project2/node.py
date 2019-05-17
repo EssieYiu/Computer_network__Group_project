@@ -25,9 +25,7 @@ class Node(object):
         self.changeable_route =[] #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
         self.down=down
 
-        print(self.neighbour)
-        print(self.ip)
-        print(self.down)
+    
        
         #初始化DV和table
         for dest in IP: #对于所有目的地ip
@@ -79,16 +77,18 @@ class Node(object):
         if omessage[0]=='1':
             
             tup=self.unpack_message(omessage)
-            message=tup[2]
-            destIP=tup[1]
-            srcIP=tup[0]
-            print(message)
-            if(destIP==self.ip):#目的地就是自己
+            message=tup[3]
+            destIP=tup[2]
+            srcIP=tup[1]
+            print("tup")
+            print(tup)
+            print('debug:DST ip:',destIP,'Self ip:',self.ip," bool:",destIP==self.ip)
+            if destIP==self.ip:#目的地就是自己
                 print("* Message from %s: %s"%(srcIP,message))
             else:#目的地不是自己
                 #查路由表，转发
                 nextIP=self.table[destIP]
-                self.sck_output.sendto(message,(nextIP,RECVPORT))
+                self.sck_output.sendto(data,(nextIP,RECVPORT))
                 print("* Help sent message from %s"%srcIP)
 
         #接收到的是邻居发来的DV信息
@@ -166,7 +166,7 @@ class Node(object):
     def unpack_message(self,message):
         #解读消息
 
-        tup = message[1:].split(' ',2)
+        tup = message.split(' ',3)
         return tup
 
     #仅仅修改了路径权重和通知邻居，没有调用重新计算DV的函数
