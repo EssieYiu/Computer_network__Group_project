@@ -4,7 +4,11 @@ import random
 BUFSIZE=1024
 RECVPORT = 8080
 SENDPORT = 8081
+<<<<<<< HEAD
 IP=["192.168.199.131","127.0.0.1","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
+=======
+IP=["192.168.199.131","127.0.0.2","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
+>>>>>>> b97f1b4210f2f2782c6401e366c89efaa408a127
 ALL="ABCDE"
 INFINITE=1000000
 class Node(object):
@@ -59,28 +63,30 @@ class Node(object):
         destIP=IP[ALL.index(dest)]
         packed_message=self.pack_message(message,destIP)#打包消息
 
-        #如果destIP就是邻居，直接发送
-        if destIP in self.neighbour.keys():
-            self.sck_output.sendto(packed_message,(destIP,RECVPORT))
-        #不是邻居，查找路由表，送到下一跳node
+        nextIP=self.table[destIP]
+        nextNode=ALL[IP.index(nextIP)]
+        cost=self.DV[destIP]
+        if cost==INFINITE:
+           print("Cannot reach the destination, send failed!")
         else:
-            nextIP=self.table[destIP]
-            nextNode=ALL[IP.index(nextIP)]
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
-            print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
-
+            if destIP!=nextIP:
+                print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
         print("* Send message to %s: %s"%(dest,destIP))
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
         index=IP.index(fhost)
         omessage=data.decode()
+        print(omessage)
         #接收到的是message
         if omessage[0]=='1':
+            
             tup=self.unpack_message(omessage)
             message=tup[2]
             destIP=tup[1]
             srcIP=tup[0]
+            print(message)
             if(destIP==self.ip):#目的地就是自己
                 print("* Message from %s: %s"%(srcIP,message))
             else:#目的地不是自己
@@ -92,9 +98,12 @@ class Node(object):
         #接收到的是邻居发来的DV信息
         elif omessage[0]=='0':
             DVneighbour=json.loads(omessage[1:])
+            
             print("* Received DV message from %s"%fhost)
             
             self.DV_neighbour[index]=DVneighbour
+            print("Receive DVneighbour:")
+            print(DVneighbour)
             self.recompute_DV()
             #if self.recompute_DV(fhost,DVneighbour)==True:
                 #self.exchange_DV()
@@ -123,14 +132,15 @@ class Node(object):
             value=INFINITE
             for neighbour,linkCost in self.neighbour.items():   #neighbour为邻居的ip，linkCost为自己到邻居的cost
                 DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
-
+                if not DVneighbour:
+                    continue
                 #add 处理宕掉的情况，若next恰好为邻居，且在邻居的DV表中发现到目的节点的路径为正无穷，那么说明路不通，
                 # 在暂时未找到其他路径的情况下，将自己的也修改为正无穷
                 #if next == neighbour and DVneighbour[key] >= INFINITE:
                     #value = INFINITE
                 #add end
                 if value>linkCost+DVneighbour.get(key,0): #当前path cost>到邻居cost+邻居到目的地cost
-                    value=linkCost+DVneighbour[key]
+                    value=linkCost+DVneighbour.get(key,0)
                     next=neighbour  #下一跳节点变为这个邻居
                     change=True
 
@@ -149,7 +159,7 @@ class Node(object):
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
             self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,RECVPORT))
-
+        #print(self.DV)
         print("* Send DV message to all neighbours!")
 
 
