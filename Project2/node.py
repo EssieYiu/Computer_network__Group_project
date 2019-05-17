@@ -4,7 +4,7 @@ import random
 BUFSIZE=1024
 RECVPORT = 8080
 SENDPORT = 8081
-IP=["172.19.112.247","127.0.0.1","127.0.0.1","127.0.0.1","127.0.0.1"]   #依次存储A,B,C,D,E的ip
+IP=["172.19.112.247","127.0.0.2","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
 INFINITE=1000000
 class Node(object):
@@ -95,6 +95,8 @@ class Node(object):
             print("* Received DV message from %s"%fhost)
             
             self.DV_neighbour[index]=DVneighbour
+            print("Receive DVneighbour:")
+            print(DVneighbour)
             self.recompute_DV()
             #if self.recompute_DV(fhost,DVneighbour)==True:
                 #self.exchange_DV()
@@ -130,7 +132,7 @@ class Node(object):
                     #value = INFINITE
                 #add end
                 if value>linkCost+DVneighbour.get(key,0): #当前path cost>到邻居cost+邻居到目的地cost
-                    value=linkCost+DVneighbour[key]
+                    value=linkCost+DVneighbour.get(key,0)
                     next=neighbour  #下一跳节点变为这个邻居
                     change=True
 
