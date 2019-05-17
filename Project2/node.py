@@ -4,11 +4,11 @@ import random
 BUFSIZE=1024
 RECVPORT = 8080
 SENDPORT = 8081
-IP=["192.168.199.131","127.0.0.1","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
+IP=["192.168.199.131","127.0.0.2","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
 INFINITE=1000000
 class Node(object):
-    def __init__(self,name='A',ip="127.0.0.1",neigh={},down=False):
+    def __init__(self,name='A',ip="127.0.0.1",neigh={},changeable=[],down=False):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.sck_input.bind((ip,RECVPORT))
@@ -22,10 +22,8 @@ class Node(object):
         self.table={}   #路由表：目的node->应该去的下一跳node
         self.DV={}  #Distance vector：node->最佳路径开销
         self.DV_neighbour=[{},{},{},{},{}]    #存储邻居的DV信息(即邻居的self.DV字典），为list，依次为A,B,C,D,E
-        self.changeable_route =[] #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
+        self.changeable_route =changeable #存储的是邻居的ip，表示它能够修改自身到这个邻居路径的权重，从拓扑图中获得
         self.down=down
-
-    
        
         #初始化DV和table
         for dest in IP: #对于所有目的地ip
@@ -38,12 +36,10 @@ class Node(object):
                 self.DV[dest]=INFINITE #目的地不是邻居，cost设为0，意味着还没有找到怎么去
                 self.table[dest]="127.0.0.1"
 
-        print("self.DV:")
-        print(self.DV)
-        print("self.neighbour:")
-        print(self.neighbour)
-        print("self.table:")
-        print(self.table)
+        print("self.DV:",self.DV)
+        print("self.neighbour:",self.neighbour)
+        print("self.changeable:",self.changeable_route)
+        print("self.table:",self.table)
         print("* __init__ end！")
          
     #发送消息
@@ -66,7 +62,7 @@ class Node(object):
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
             if destIP!=nextIP:
                 print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
-        print("* Send message to %s: %s"%(dest,destIP))
+            print("* Send message to %s: %s"%(dest,destIP))
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
@@ -74,15 +70,14 @@ class Node(object):
         omessage=data.decode()
         print(omessage)
         #接收到的是message
-        if omessage[0]=='1':
-            
+        if omessage[0]=='1':           
             tup=self.unpack_message(omessage)
-            message=tup[3]
-            destIP=tup[2]
-            srcIP=tup[1]
             print("tup")
             print(tup)
-            print('debug:DST ip:',destIP,'Self ip:',self.ip," bool:",destIP==self.ip)
+            message=tup[3]
+            destIP=tup[2]
+
+            srcIP=tup[1]
             if destIP==self.ip:#目的地就是自己
                 print("* Message from %s: %s"%(srcIP,message))
             else:#目的地不是自己
@@ -165,8 +160,7 @@ class Node(object):
 
     def unpack_message(self,message):
         #解读消息
-
-        tup = message.split(' ',3)
+        tup = (message).split(' ',3)
         return tup
 
     #仅仅修改了路径权重和通知邻居，没有调用重新计算DV的函数
