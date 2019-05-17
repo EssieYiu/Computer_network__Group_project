@@ -101,8 +101,9 @@ class Node(object):
 
         #接收到的是邻居发来的link cost改变,更新self.neighbour
         elif omessage[0]=='2':
-            new_weight=omessage[1:].split(' ',2)    #获得新的权重 ！！！还没修改好
-            self.neighbour[fhost]=new_weight    #更新
+            new_weight=(omessage.split(' ',2))[2]   #获得新的权重 ！！！还没修改好
+            print("debug:new weight:",new_weight)
+            self.neighbour[fhost]=int(new_weight)    #更新
             self.recompute_DV() #重计算
 
         #接收到邻居发来的
@@ -121,8 +122,8 @@ class Node(object):
         for key in self.DV.keys():   #key为目的ip，value为从自己到目的地的cost  
             next=self.table.get(key,'DK')
             value=INFINITE
-            for neighbour,linkCost in self.neighbour.items():   #neighbour为邻居的ip，linkCost为自己到邻居的cost
-                DVneighbour=self.DV_neighbour[IP.index(neighbour)]  #该邻居的DV信息
+            for neigh,linkCost in self.neighbour.items():   #neighbour为邻居的ip，linkCost为自己到邻居的cost
+                DVneighbour=self.DV_neighbour[IP.index(neigh)]  #该邻居的DV信息
                 if not DVneighbour:
                     continue
                 #add 处理宕掉的情况，若next恰好为邻居，且在邻居的DV表中发现到目的节点的路径为正无穷，那么说明路不通，
@@ -132,7 +133,7 @@ class Node(object):
                 #add end
                 if value>linkCost+DVneighbour.get(key,0): #当前path cost>到邻居cost+邻居到目的地cost
                     value=linkCost+DVneighbour.get(key,0)
-                    next=neighbour  #下一跳节点变为这个邻居
+                    next=neigh  #下一跳节点变为这个邻居
                     change=True
 
             self.DV[key] = value #add 将修改的value值写回去
