@@ -33,8 +33,8 @@ def downAndrecover(node):
         node.recover()
     #my_ip = input('Please enter your ip address')
     #my_name = input('Please enter your name')
-my_ip="192.168.199.131"
-my_name='A'
+my_ip="192.168.199.102"
+my_name='E'
 Graph = TopoGraph()
 Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
@@ -42,8 +42,10 @@ down=Graph.get_down(my_name)
 changeable=Graph.node_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable,down)
-my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
+my_node.neighbour={'192.168.199.131':34}
 my_node.DV['127.0.0.1']=1000000
+my_node.DV['127.0.0.2']=1000000
+
 my_thread=[]
 lock=threading.RLock()
     #线程共用的：my_node的sck_output
