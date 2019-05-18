@@ -58,6 +58,7 @@ class router:
         data,(fhost,fport) = self.sck_input.recvfrom(BUFFSIZE)
         message = data.decode()
         message = message.split(' ',4)
+        print("debug message from:",fhost,'msg:',message)
         #meaningful message, decide whether to send or print
         if message[0] == '0':
             if message[2] == self.ip:
@@ -82,7 +83,7 @@ class router:
                 print('one of my neibour down/recover,my route to it now:',weight)
             #forward out, send to all its neighbour,with TTL -1
             if int(message[4]) > 0:
-                message[4] = message[4] - 1
+                message[4] = str(int(message[4]) - 1)
                 message = ' '.join(message)
                 for node in NAMELIST:
                     if self.neighbour.get(node,0):
@@ -91,7 +92,7 @@ class router:
                         if next_stop_ip == "":
                             print('Dst not exist')
                         else:
-                            self.sck_output(message.encode(),(next_stop_ip,RECVPORT))
+                            self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
 
     def send_meaningful_message(self):
         message = input("Please enter your message to send")

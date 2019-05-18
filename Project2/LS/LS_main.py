@@ -24,7 +24,6 @@ def receive(routerA):
         lock.acquire()
         routerA.handle_receive()
         lock.release()
-        time.sleep(0.001)
 
 def down_and_recover(routerA):
     time.sleep(60)
