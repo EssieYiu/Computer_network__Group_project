@@ -66,7 +66,10 @@ class router:
             else:
                 print("Help forward message from",message[1],"to",message[2])
                 dst = message[2]
-                self.sck_output.sendto(data,(dst,RECVPORT))
+                if dst == "":
+                    print('Dst not exist')
+                else:
+                    self.sck_output.sendto(data,(dst,RECVPORT))
         #broadcast route weight, change topo and neighbour
         elif message[0] == 1:
             host1 = message[1]
@@ -85,7 +88,10 @@ class router:
                     if self.neighbour.get(node,0):
                         next_stop = self.next_jump[node]
                         next_stop_ip = self.name_to_ip[next_stop]
-                        self.sck_output(message.encode(),(next_stop_ip,RECVPORT))
+                        if next_stop_ip == "":
+                            print('Dst not exist')
+                        else:
+                            self.sck_output(message.encode(),(next_stop_ip,RECVPORT))
 
     def send_meaningful_message(self):
         message = input("Please enter your message to send")
@@ -109,7 +115,10 @@ class router:
         for node in NAMELIST:
             if self.neighbour.get(node,0):
                 route_info = '1 '+self.name+' '+node+' '+str(self.cost[node])+' '+str(TTL)
-                self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                if self.name_to_ip[node] == "":
+                    print("Dst not exist")
+                else:
+                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
         print("Broadcast my route info")
 
     #only change its own topo and neighbour info,
@@ -128,10 +137,13 @@ class router:
                 self.neighbour[node] = INF
                 self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')] = INF
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = INF
-                route_info = '1 '+self.name+' '+node+' '+str(INF)+' '+str(TTL)
-                self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
-                route_info = '1 '+node+' '+self.name+' '+str(INF)+' '+str(TTL)
-                self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                if self.name_to_ip[node] == "":
+                    print('Dst not exist')
+                else:
+                    route_info = '1 '+self.name+' '+node+' '+str(INF)+' '+str(TTL)
+                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                    route_info = '1 '+node+' '+self.name+' '+str(INF)+' '+str(TTL)
+                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
 
     #recover two edges at the same time
     def recover(self):
@@ -141,6 +153,10 @@ class router:
                 self.neighbour[node] = recover_weight
                 self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')] = recover_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = recover_weight
-                route_info = '1 '+self.name+' '+node+' '+str(recover_weight)+' '+str(TTL)
-                self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
-                route_info = '1 '+node+' '+self.name+' '+str(recover_weight)+' '+str(TTL)
+                if self.name_to_ip[node] == "":
+                    print("dst not exist")
+                else:
+                    route_info = '1 '+self.name+' '+node+' '+str(recover_weight)+' '+str(TTL)
+                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                    route_info = '1 '+node+' '+self.name+' '+str(recover_weight)+' '+str(TTL)
+                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
