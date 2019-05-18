@@ -11,6 +11,7 @@ class Node(object):
     def __init__(self,name='A',ip="127.0.0.1",neigh={},changeable=[],down=False):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        ip="0.0.0.0"
         self.sck_input.bind((ip,RECVPORT))
         #发套接字
         self.sck_output=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -43,26 +44,34 @@ class Node(object):
         print("* __init__ end！")
          
     #发送消息
-    def send_message(self):
+    def send_message(self,message,dest):
         # destIP:string
         # message:string
-        message=input("Please enter the message you want to send:")
-        dest=input("Please enter the destination(A/B/C/D/E):")
-        while dest==self.name or dest not in ALL:
-            dest=input("Error! Please enter another destination: ")
+        #message=input("Please enter the message you want to send:")
+        #dest=input("Please enter the destination(A/B/C/D/E):")
+        print("dest:",dest)
+        print("message:",message)
+        if dest==self.name or dest not in ALL:
+            return "* Error: please enter another destination\n"
         destIP=IP[ALL.index(dest)]
         packed_message=self.pack_message(message,destIP)#打包消息
-
+        print(packed_message)
         nextIP=self.table[destIP]
+        if nextIP not in IP:
+            return "* Error: cannot reach the destination!\n"
         nextNode=ALL[IP.index(nextIP)]
         cost=self.DV[destIP]
-        if cost==INFINITE:
-           print("* Cannot reach the destination, send failed!\n")
+        if cost==INFINITE or nextNode=='DK':
+           return "* Error: cannot reach the destination!\n"
         else:
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
+            towhere="* Message: "+message+"\n* To:"+dest+" "+destIP+'\n\n'
+            first="* Firstly, send message to next node "+nextNode+": \n"+nextIP+'\n'
             if destIP!=nextIP:
-                print("* Firstly, send message to next node %s: %s"%(nextNode,nextIP))
-            print("* Send message to %s: %s\n"%(dest,destIP))
+                return first+towhere
+            else:
+                return towhere
+           
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
@@ -76,37 +85,43 @@ class Node(object):
             destIP=tup[2]
             srcIP=tup[1]
             if destIP==self.ip:#目的地就是自己
-                print("* Message from %s: %s\n"%(srcIP,message))
+                return (0,"* Message: "+message+'\n'+'From: '+srcIP+'\n\n')
             else:#目的地不是自己
                 #查路由表，转发
                 nextIP=self.table[destIP]
                 self.sck_output.sendto(data,(nextIP,RECVPORT))
-                print("* Help sent message src:%s dest:%s\n"%(srcIP,destIP))
+                return (1,'* Help sent message\n '+ 'Src: '+srcIP+'Dest'+destIP+'\n\n')
 
         #接收到的是邻居发来的DV信息
         elif omessage[0]=='0':
             DVneighbour=json.loads(omessage[1:])
-            
-            print("* Received DV message from %s"%fhost)
-            
+
             self.DV_neighbour[index]=DVneighbour
-            print("Receive DVneighbour:",DVneighbour)
+            #print("Receive DVneighbour:",DVneighbour)
             self.recompute_DV()
-            #if self.recompute_DV(fhost,DVneighbour)==True:
-                #self.exchange_DV()
+            return(2,"* Received DV message from "+fhost+'\n'+'DVneighbour: '+DVneighbour+'\n')
+
 
         #接收到的是邻居发来的link cost改变,更新self.neighbour
-        elif omessage[0]=='2' or omessage[0]=='4':
+        elif omessage[0]=='2':
             new_weight=int((omessage.split(' ',2))[2])    #获得新的权重 ！！
             print("new_weight",new_weight)
             self.neighbour[fhost]=new_weight    #更新
             self.recompute_DV() #重计算
+            return(3,"* New local link cost")
 
+        elif omessage[0]=='4':
+            new_weight=int((omessage.split(' ',2))[2])    #获得新的权重 ！！
+            print("new_weight",new_weight)
+            self.neighbour[fhost]=new_weight    #更新
+            self.recompute_DV() #重计算
+            return(3,"* Neighbour "+fhost+"is back!\n")
         #接收到邻居发来的
         elif omessage[0]=='3':
             self.neighbour[fhost]=INFINITE
             #self.DV_neighbour[index]={}
             self.recompute_DV()
+            return(3,"* Neighbour "+fhost+"is down!\n")
 
 
     #重新计算DV信息
@@ -149,7 +164,7 @@ class Node(object):
             #给每一位邻居发送自己的DV信息
             self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,RECVPORT))
         #print(self.DV)
-        print("\n* Send DV message to all neighbours!")
+        #return "* Send DV message to all neighbours!\n"
 
 
     def pack_message(self,message,destIP):
@@ -176,7 +191,9 @@ class Node(object):
     def go_down(self):
         for neibor in self.neighbour.keys():    #告诉所有邻居我down了
            message='3'
+           self.neighbour[neibor]=INFINITE
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
+        self.recompute_DV()
         print("* Down!")
 
     def recover(self):
@@ -185,6 +202,8 @@ class Node(object):
            self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
            message = '4 route_recover '+str(new_weight)  #!!!信息格式未规范，需要后续修改
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
-        self.recompute_DV()
+        self.recompute_DV() #需要吗？？
+        print(self.DV)
+        print(self.neighbour)
         print("* Recover!")
 
