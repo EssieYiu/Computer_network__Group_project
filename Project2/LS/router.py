@@ -56,10 +56,10 @@ class router:
 
     def handle_receive(self):
         data,(fhost,fport) = self.sck_input.recvfrom(BUFFSIZE)
-        message = str.decode(data)
+        message = data.decode()
         message = message.split(' ',3)
         #meaningful message, decide whether to send or print
-        if message[0] == 0:
+        if message[0] == '0':
             if message[2] == self.ip:
                 print("Receive message from",message[1],'debug:',fhost)
                 print(message[3])
@@ -71,7 +71,7 @@ class router:
                 else:
                     self.sck_output.sendto(data,(dst,RECVPORT))
         #broadcast route weight, change topo and neighbour
-        elif message[0] == 1:
+        elif message[0] == '1':
             host1 = message[1]
             host2 = message[2]
             weight = int (message[3])
@@ -154,7 +154,7 @@ class router:
                 self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')] = recover_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = recover_weight
                 if self.name_to_ip[node] == "":
-                    print("dst not exist")
+                    print("Dst not exist")
                 else:
                     route_info = '1 '+self.name+' '+node+' '+str(recover_weight)+' '+str(TTL)
                     self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))

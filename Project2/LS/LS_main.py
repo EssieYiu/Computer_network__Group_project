@@ -7,10 +7,11 @@ lock = threading.RLock()
 def broadcast_route(routerA):
     while 1:
         routerA.broadcast()
-        time.sleep(10)
+        time.sleep(5)
     
 def change_road(routerA):
     while 1:
+        print('I change the route')
         routerA.change_route()
         time.sleep(20)
 
@@ -32,21 +33,25 @@ def down_and_recover(routerA):
     time.sleep(60)
     if routerA.down == True:
         lock.acquire()
+        print("I am going down!")
         routerA.down()
         lock.release()
         time.sleep(60)
         lock.acquire()
+        print("I now recover!")
         routerA.recover()
         lock.release()
 
 def compute_LS(routerA):
     while 1:
-        time.sleep(5)
+        time.sleep(2)
         routerA.LS_algorithm()
+        print("Recompute LS. cost:",routerA.cost)
+        print('next jump:',routerA.next_jump)
 
 if __name__ == "__main__":
-    my_name = 'A'
-    my_ip = '0.0.0.0'
+    my_name = 'D'
+    my_ip = '192.168.199.205'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
     init_topo = Graph.get_init_topo()
