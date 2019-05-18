@@ -23,6 +23,17 @@
 
 
 ### LS（如果有时间）
+    设计了两个类，router和LSGraph
+- router：路由器节点
+- LSGraph：拓扑图信息类
+
+|字段1|字段2|字段3|字段4|字段5|意义|
+|-----|----|-----|-----|----|----|
+|0|src_ip|dst_ip|msg|/|接受到了有意义的消息|
+|1|src_name|dst_name|weight|TTL|接受到路由广播包|
+|2|route_weight_change|new_weight|/|/|“感知”到了路径的变化，实际上是修改了路径权重的邻居告诉它|
+|3|？|？|？|？|邻居发来的down信息|
+
 ## 具体实现
 ### DV
 #### node

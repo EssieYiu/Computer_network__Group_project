@@ -5,19 +5,32 @@ import time
 def sendDV_period(node):
     while 1:
         node.send_DV()
-        print(node.table)
+        print("DV:",node.DV)
+        print("table:",node.table)
+        print()
         time.sleep(10)
 def change_period(node):
     while 1:
-        time.sleep(20)
+        time.sleep(30)
+        lock.acquire()
         node.change_route()
-        print("after change:",node.neighbour)
+        print("after change neighbour:",node.neighbour)
+        print("DV:",node.DV)
+        lock.release()
 def sendMessage(node):
     while 1:
         node.send_message()
 def recv(node):
     while 1:
+        lock.acquire()
         node.recv()
+        lock.release()
+def downAndrecover(node):
+    time.sleep(60)
+    if node.down==True:
+        node.go_down()
+        time.sleep(60)
+        node.recover()
     #my_ip = input('Please enter your ip address')
     #my_name = input('Please enter your name')
 my_ip="192.168.199.102"
@@ -34,6 +47,7 @@ my_node.DV['127.0.0.1']=1000000
 my_node.DV['127.0.0.2']=1000000
 
 my_thread=[]
+lock=threading.RLock()
     #线程共用的：my_node的sck_output
 
     #1.周期性发送DV消息
@@ -43,7 +57,7 @@ my_thread.append(DVthread)
 #DVthread.start()
 
     #2.接收
-    #涉及帮忙转发:sendto
+    #recv:sendto、recompute
 Rthread=threading.Thread(target=recv,args=(my_node,))
 my_thread.append(Rthread)
 #Rthread.start()
@@ -55,12 +69,15 @@ my_thread.append(Sthread)
 #Sthread.start()
    
     #4.周期性更改链路代价
-    #change_route:sendto
+    #change_route:sendto、recompute_DV
 Cthread=threading.Thread(target=change_period,args=(my_node,))
 my_thread.append(Cthread)
 #Cthread.start()
+
+Dthread=threading.Thread(target=downAndrecover,args=(my_node,))
+my_thread.append(Dthread)
 for thread in my_thread:
-    time.sleep(3)
+    time.sleep(1)
     thread.start()
 
 for thread in my_thread:
@@ -72,17 +89,7 @@ for thread in my_thread:
 
 
 
-    #my_node.DV_neighbour=[{},{my_ip:10,'E':1},{},{},{my_ip:2,'B':1}]
-    
-    #my_node.initial_DV()
-    #print(my_node.neighbour)
-    #print(my_node.DV_neighbour)
-    #print(my_node.DV)
-    #print(my_node.table)
-    #my_node.recompute_DV()
-    #my_node.send_DV()
-    #my_node.recv()
-   # my_node.recompute_DV()
+
 
 
     
