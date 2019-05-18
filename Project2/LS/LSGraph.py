@@ -18,3 +18,8 @@ class LSGraph:
         
     def get_init_topo(self):
         return self.topo
+
+    def get_down_status(self,router_name):
+        if router_name == 'A':
+            return True
+        return False 

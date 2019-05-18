@@ -8,10 +8,10 @@ BUFFSIZE = 4096
 TTL = 2
 NAMELIST = ['A','B','C','D','E']
 class router:
-    def __init__(self,name = 'A',ip = "0.0.0.0",neigh = {},name_ip = {},init_topo = [[]]):
+    def __init__(self,name = 'A',ip = "0.0.0.0",neigh = {},name_ip = {},init_topo = [[]],down_st=False):
         self.name_to_ip = name_ip #dict name->ip, neibour info,their name and address
         self.neighbour = copy.deepcopy(neigh) #dict neighbour_name->cost
-        
+        self.down_status = down_st
         self.topo = copy.deepcopy(init_topo) #adjacent matrix, store the map
 
         self.next_jump = {} #dict dst_name->next jump

@@ -27,7 +27,7 @@ def receive(routerA):
 
 def down_and_recover(routerA):
     time.sleep(60)
-    if routerA.down == True:
+    if routerA.down_status == True:
         lock.acquire()
         print("I am going down!")
         routerA.down()
@@ -46,13 +46,14 @@ def compute_LS(routerA):
         print('next jump:',routerA.next_jump)
 
 if __name__ == "__main__":
-    my_name = 'D'
-    my_ip = '192.168.199.205'
+    my_name = 'E'
+    my_ip = '192.168.199.102'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
     init_topo = Graph.get_init_topo()
     neibour = Graph.get_neighbour(my_name)
-    my_router = router(my_name,my_ip,neibour,name_ip,init_topo)
+    down_st = Graph.get_down_status(my_name)
+    my_router = router(my_name,my_ip,neibour,name_ip,init_topo,down_st)
 
     print('router topo:',my_router.topo)
     print('router neibour:',my_router.neighbour)
