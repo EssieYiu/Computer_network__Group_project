@@ -24,7 +24,6 @@ def receive(routerA):
         lock.acquire()
         routerA.handle_receive()
         lock.release()
-        time.sleep(0.001)
 
 def down_and_recover(routerA):
     time.sleep(60)
@@ -47,8 +46,8 @@ def compute_LS(routerA):
         print('next jump:',routerA.next_jump)
 
 if __name__ == "__main__":
-    my_name = 'E'
-    my_ip = '192.168.199.102'
+    my_name = 'D'
+    my_ip = '192.168.199.205'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
     init_topo = Graph.get_init_topo()

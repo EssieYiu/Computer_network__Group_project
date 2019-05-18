@@ -82,7 +82,7 @@ class router:
                 print('one of my neibour down/recover,my route to it now:',weight)
             #forward out, send to all its neighbour,with TTL -1
             if int(message[4]) > 0:
-                message[4] = message[4] - 1
+                message[4] = str(int(message[4]) - 1)
                 message = ' '.join(message)
                 for node in NAMELIST:
                     if self.neighbour.get(node,0):
