@@ -17,10 +17,7 @@ def change_road(routerA):
 
 def send_message(routerA):
     while 1:
-        lock.acquire()
         routerA.send_meaningful_message()
-        lock.release()
-        time.sleep(0.001)
     
 def receive(routerA):
     while 1:
@@ -50,8 +47,8 @@ def compute_LS(routerA):
         print('next jump:',routerA.next_jump)
 
 if __name__ == "__main__":
-    my_name = 'D'
-    my_ip = '192.168.199.205'
+    my_name = 'E'
+    my_ip = '192.168.199.102'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
     init_topo = Graph.get_init_topo()

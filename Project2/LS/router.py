@@ -57,7 +57,7 @@ class router:
     def handle_receive(self):
         data,(fhost,fport) = self.sck_input.recvfrom(BUFFSIZE)
         message = data.decode()
-        message = message.split(' ',3)
+        message = message.split(' ',4)
         #meaningful message, decide whether to send or print
         if message[0] == '0':
             if message[2] == self.ip:
