@@ -11,7 +11,6 @@ class Node(object):
     def __init__(self,name='A',ip="127.0.0.1",neigh={},changeable=[],down=False):
         #收套接字
         self.sck_input=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        ip="0.0.0.0"
         self.sck_input.bind((ip,RECVPORT))
         #发套接字
         self.sck_output=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
