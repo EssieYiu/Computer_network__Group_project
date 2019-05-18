@@ -45,7 +45,7 @@ class router:
             for i in range(5):
                 if dist[chr(i+ord('A'))] > dist[cur_node] + self.topo[ord(cur_node)-ord('A')][i]:
                     dist[chr(i+ord('A'))] = dist[cur_node] + self.topo[ord(cur_node)-ord('A')][i]
-                    prev[chr(i+ord('A'))] = cur_node    
+                    prev[chr(i+ord('A'))] = cur_node  
         for node in NAMELIST:
             if node != self.name:
                 self.cost[node] = dist[node]
@@ -58,7 +58,6 @@ class router:
         data,(fhost,fport) = self.sck_input.recvfrom(BUFFSIZE)
         message = data.decode()
         message = message.split(' ',4)
-        print("debug message from:",fhost,'msg:',message)
         #meaningful message, decide whether to send or print
         if message[0] == '0':
             if message[2] == self.ip:
