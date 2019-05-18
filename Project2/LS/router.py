@@ -58,6 +58,7 @@ class router:
         data,(fhost,fport) = self.sck_input.recvfrom(BUFFSIZE)
         message = data.decode()
         message = message.split(' ',4)
+        print("debug message from:",fhost,'msg:',message)
         #meaningful message, decide whether to send or print
         if message[0] == '0':
             if message[2] == self.ip:
@@ -91,7 +92,7 @@ class router:
                         if next_stop_ip == "":
                             print('Dst not exist')
                         else:
-                            self.sck_output(message.encode(),(next_stop_ip,RECVPORT))
+                            self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
 
     def send_meaningful_message(self):
         message = input("Please enter your message to send")
