@@ -1,6 +1,7 @@
 from router import router
 from LSGraph import LSGraph
 from tkinter import *
+import tkinter.font as tkFont
 import threading
 import time
 NAMELIST =['A','B','C','D','E']
@@ -15,7 +16,7 @@ def compute_LS(routerA,LB):
         LB.insert(END,head_info)
         for n in NAMELIST:
             if n != routerA.name:
-                route_info = ' '+n+'     '+str(routerA.cost[n])+'       '+routerA.next_jump[n]
+                route_info = '  '+n+'      '+str(routerA.cost[n])+'         '+routerA.next_jump[n]
                 LB.insert(END,route_info)
         print("Recompute LS. cost:",routerA.cost)
         print('next jump:',routerA.next_jump)
@@ -56,6 +57,7 @@ def broadcast_route(routerA):
 
 if __name__ == "__main__":
     root = Tk()
+    my_font = tkFont.Font(family='Arial',size=10,weight =tkFont.BOLD)
     root.title = "LS router"
     my_name = 'D'
     #my_ip = '192.168.199.102'
@@ -76,39 +78,39 @@ if __name__ == "__main__":
     print('router next jump:',my_router.next_jump)
     my_router.broadcast()
 
-    label_ip = Label(root,text="my ip address:"+my_ip)
-    label_name = Label(root,text="my name:"+my_name)
+    label_ip = Label(root,text="my ip address:"+my_ip,font=my_font)
+    label_name = Label(root,text="my name:"+my_name,font=my_font)
     label_ip.grid(row = 0, column = 0,columnspan =2,sticky=W+E)
     label_name.grid(row = 0, column = 2,sticky=W)
 
-    Label(root,text="status message:").grid(row = 1,column = 0,sticky=E,pady=5)
+    Label(root,text="status message:",font=my_font).grid(row = 1,column = 0,sticky=E,pady=5)
     msg_var = StringVar()
-    status_msg = Label(root,text="Here is the status msg",textvariable = msg_var)
+    status_msg = Label(root,text="Here is the status msg",textvariable = msg_var,font=my_font)
     status_msg.grid(row = 1, column = 1,pady=5)
 
-    route_info_list = Listbox(root)
+    route_info_list = Listbox(root,font=my_font)
     route_info_list.grid(row = 2, column = 0,columnspan = 3)
 
-    down_Btn = Button(root,text="down",command = lambda:down(my_router,msg_var))
+    down_Btn = Button(root,text="down",font=my_font,command = lambda:down(my_router,msg_var))
     down_Btn.grid(row = 4,column = 0,sticky=E,pady=5)
-    recover_Btn = Button(root,text="recover",command = lambda:recover(my_router,msg_var))
+    recover_Btn = Button(root,text="recover",font=my_font,command = lambda:recover(my_router,msg_var))
     recover_Btn.grid(row = 4,column = 1,pady=5)
-    change_route_Btn = Button(root,text="change route",command = lambda:change_road(my_router,msg_var))
+    change_route_Btn = Button(root,text="change route",font=my_font,command = lambda:change_road(my_router,msg_var))
     change_route_Btn.grid(row = 4,column = 2,sticky=W,pady=5)
 
-    Label(root,text="msg send:").grid(row = 5,column = 0,sticky=E)
+    Label(root,text="msg send:",font=my_font).grid(row = 5,column = 0,sticky=E)
     msg_send = Entry(root)
     msg_send.grid(row = 5,column = 1)
 
-    Label(root,text="dst send:").grid(row = 6,column = 0,sticky=E)
+    Label(root,text="dst send:",font=my_font).grid(row = 6,column = 0,sticky=E)
     dst_send = Entry(root)
     dst_send.grid(row = 6,column = 1)
 
-    send_Btn = Button(root,text="send message",command = lambda:send_message(my_router,msg_send,dst_send,msg_var))
+    send_Btn = Button(root,text="send message",font=my_font,command = lambda:send_message(my_router,msg_send,dst_send,msg_var))
     send_Btn.grid(row = 5,column = 2,rowspan=2)
 
-    Label(root,text="Receive information:").grid(row = 8,column = 1,sticky=W+E)
-    receive_info = Text(root,width = 50,height = 25)
+    Label(root,text="Receive information:",font=my_font).grid(row = 8,column = 1,sticky=W+E)
+    receive_info = Text(root,width = 50,height = 25,font=my_font)
     receive_info.grid(row = 9,column = 0,columnspan = 3)
 
     my_thread = []
