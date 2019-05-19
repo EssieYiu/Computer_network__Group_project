@@ -17,7 +17,9 @@ def change_road(routerA):
 
 def send_message(routerA):
     while 1:
-        routerA.send_meaningful_message()
+        msg = input('Please enter the msg to send')
+        dst = input('Please enter the destination:(A/B/C/D/E),but not yourself:')
+        routerA.send_meaningful_message(msg,dst)
     
 def receive(routerA):
     while 1:

@@ -93,9 +93,11 @@ class router:
                         else:
                             self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
 
-    def send_meaningful_message(self):
-        message = input("Please enter your message to send")
-        dst = input("Please enter the destination(A/B/C/D/E),but not yourself:")
+    def send_meaningful_message(self,msg,dst_in):
+        #message = input("Please enter your message to send")
+        #dst = input("Please enter the destination(A/B/C/D/E),but not yourself:")
+        message = msg
+        dst = dst_in
         if dst not in NAMELIST:
             print("Invalid destionation!")
         elif dst == self.name:
