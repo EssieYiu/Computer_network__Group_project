@@ -5,9 +5,8 @@ import tkinter.messagebox
 import threading
 import time
 
-
-my_ip="192.168.199.205"
-my_name='D'
+my_ip="172.20.10.6"
+my_name='A'
 Graph = TopoGraph()
 Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
@@ -15,7 +14,8 @@ down=Graph.get_down(my_name)
 changeable=Graph.node_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable,down)
-my_node.neighbour={'192.168.199.131':34}
+#my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
+my_node.neighbour={'172.20.10.2':30}
 my_node.DV['127.0.0.1']=1000000
 my_thread=[]
 lock=threading.RLock()
@@ -23,12 +23,12 @@ lock=threading.RLock()
 #send按钮按下时
 def hit_sbut(node):
     global s_feedback
+    print('my_neighbour',node.neighbour)
     message=message_entry.get() #获取文本框里的消息内容
-    print(message)
     dest=dest_entry.get()   #获取目的地
-    print(dest)
+
     if not message or not dest:
-        tkinter.messagebox.showerror(title='Error',message="Empty message, try again!")
+        tkinter.messagebox.showerror(title='Error',message="Empty message, try again!\n")
         return
     feedback=node.send_message(message,dest) #发送消息
     message_entry.delete(0,tk.END)  #清空框框
@@ -48,46 +48,25 @@ def change(node):
 
 #down按钮按下
 def go_down(node):
+    #lock.acquire()
     if node.down==True:
         node.go_down()
         linkInfo.insert(tk.END,"* Down!\n\n")
+    #lock.release()
 #recover按钮按下
 def recover(node):
     if node.down==True:
         node.recover()
         linkInfo.insert(tk.END,"* Recover!\n"+"* neighbour: "+str(node.neighbour)+"\n\n")
     
-window=tk.Tk()  #前台
-window.title('Host - Message')
-window.geometry('600x350')
-
-s_feedback=tk.Text(window,height=20) #最大的显示窗口
-s_feedback.pack(fill=tk.X)   
-fm1=tk.Frame(window)
-message_hint=tk.Label(fm1,text="Enter message here:")
-message_hint.pack(side=tk.LEFT)
-message_entry=tk.Entry(fm1)  #要发的消息输入框
-message_entry.pack(side=tk.LEFT)
-fm1.pack(fill=tk.BOTH)
-
-fm2=tk.Frame(window)
-dest_hint=tk.Label(fm2,text="Destination(A/B/C/D/E):")
-dest_hint.pack(side=tk.LEFT)
-dest_entry=tk.Entry(fm2,show=None)   #目的地名字输入框
-dest_entry.pack(side=tk.LEFT)
-sbut=tk.Button(fm2,text='Send',width=10,height=1,command=lambda:hit_sbut(my_node))   #发送按钮
-sbut.pack(side=tk.LEFT)
-
-fm2.pack(fill=tk.BOTH)
-
-window2=tk.Tk() #后台
-window2.title('Router - Information')
+window2=tk.Tk()#后台
+window2.title('Router')
 window2.geometry('800x600')
 
 #三个显示窗口
 #1.DV信息（收到的，周期发出自己的）
 fm3=tk.Frame(window2)
-dest_hint=tk.Label(fm3,text="DV info")
+dest_hint=tk.Label(fm3,text="DV info        ")
 dest_hint.pack(side=tk.LEFT)
 DVinfo=tk.Text(fm3,width=80,height=10)
 DVinfo.pack(side=tk.LEFT)
@@ -107,22 +86,46 @@ linkInfo=tk.Text(fm5,width=80,height=8)
 linkInfo.pack()
 fm5.pack(pady=10)
 
+window=tk.Toplevel(height=600,width=300)  #前台
+window.title('Host - Message')
+#window.geometry('600x350')
 
+s_feedback=tk.Text(window,height=20) #最大的显示窗口
+s_feedback.pack(fill=tk.X)   
+fm1=tk.Frame(window)
+message_hint=tk.Label(fm1,text="Enter message here:")
+message_hint.pack(side=tk.LEFT)
+message_entry=tk.Entry(fm1)  #要发的消息输入框
+message_entry.pack(side=tk.LEFT)
+fm1.pack(fill=tk.BOTH)
+
+fm2=tk.Frame(window)
+dest_hint=tk.Label(fm2,text="Destination(A/B/C/D/E):")
+dest_hint.pack(side=tk.LEFT)
+dest_entry=tk.Entry(fm2,show=None)   #目的地名字输入框
+dest_entry.pack(side=tk.LEFT)
+sbut=tk.Button(fm2,text='Send',width=10,height=1,command=lambda:hit_sbut(my_node))   #发送按钮
+sbut.pack(side=tk.LEFT)
+
+fm2.pack(ipadx=15,fill=tk.BOTH)
 #sendDV线程调用
 def sendDV_period(node):
     global DVinfo
     while 1:
+        time.sleep(1)
         node.send_DV()
         show="* Send DV message to all neighbours!\n"
         my_dv=str(node.DV)
         my_table=str(node.table)
         DVinfo.insert(tk.END,show+'my_dv'+my_dv+'\n'+'my_table'+my_table+'\n\n')
-        time.sleep(10)
+        time.sleep(12)
 #接收线程调用
 def recv(node):
+    print("thread")
     while 1:
         lock.acquire()
-        feedback=node.recv()  
+        feedback=node.recv() 
+        print('here')
         lock.release()
         #收到消息
         if feedback[0]==0:
@@ -151,8 +154,6 @@ my_thread.append(Rthread)
 
 def thread_start():
     global my_thread
-    #global window
-    #window.mainloop()
     for thread in my_thread:
         time.sleep(2)
         thread.setDaemon(True)
@@ -172,7 +173,6 @@ downbut=tk.Button(fm6,text='Down',width=15,height=2,command=lambda:go_down(my_no
 downbut.pack()
 rebut=tk.Button(fm6,text='Recover',width=15,height=2,command=lambda:recover(my_node))
 rebut.pack()
-fm6.pack(pady=20)
+fm6.pack(pady=15)
 
 window2.mainloop()
-window.mainloop()
