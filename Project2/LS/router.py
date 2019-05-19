@@ -62,19 +62,20 @@ class router:
         message = data.decode()
         message = message.split(' ',4)
         #meaningful message, decide whether to send or print
+        print("debug: receive message from",fhost,message)
         rtn_msg = ""
         if message[0] == '0':
             if message[2] == self.ip:
                 print("Receive message from",message[1],'debug:',fhost)
                 print(message[3])
-                rtn_msg = "Receive message from "+message[1]
+                rtn_msg = "Receive message from "+message[1]+message[3]
             else:
                 print("Help forward message from",message[1],"to",message[2])
                 rtn_msg = "Help forward message from "+message[1]+" to "+message[2]
                 dst = message[2]
                 if dst == "":
-                    print('Dst not exist')
-                    rtn_msg = "Dst not exist"
+                    print('Forward fail, because dst:',dst,"not exist")
+                    rtn_msg = rtn_msg+" Forward failed, because "+dst+" not exist"
                 else:
                     self.sck_output.sendto(data,(dst,RECVPORT))
         #broadcast route weight, change topo and neighbour
@@ -87,7 +88,7 @@ class router:
             if host1 == self.ip:
                 self.neighbour[host1] = weight
                 print('one of my neibour down/recover,my route to it now:',weight)
-                rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)
+                rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)+"\n"
             #forward out, send to all its neighbour,with TTL -1
             if int(message[4]) > 0:
                 message[4] = str(int(message[4]) - 1)
@@ -97,10 +98,10 @@ class router:
                         next_stop = self.next_jump[node]
                         next_stop_ip = self.name_to_ip[next_stop]
                         if next_stop_ip == "":
-                            print('Dst not exist')
-                            rtn_msg = "Dst not exist"
+                            rtn_msg = rtn_msg+" Forward broadcast info failed, because"+next_stop+" does not exist"
                         else:
                             self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
+        print(rtn_msg)
         return rtn_msg
 
     def send_meaningful_message(self,msg,dst_in):
@@ -133,7 +134,7 @@ class router:
             if self.neighbour.get(node,0):
                 route_info = '1 '+self.name+' '+node+' '+str(self.cost[node])+' '+str(TTL)
                 if self.name_to_ip[node] == "":
-                    print("Dst not exist")
+                    print("I can not send broadcast info to",node,"because it doesn't exist")
                 else:
                     self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
         print("Broadcast my route info")
@@ -143,7 +144,10 @@ class router:
     def change_route(self):
         for node in NAMELIST:
             if self.neighbour.get(node,0):
-                new_weight = random.randint(0,50)
+                if self.name_to_ip[node] == "":
+                    new_weight = INF
+                else:
+                    new_weight = random.randint(1,50)
                 self.neighbour[node] = new_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = new_weight
                 print('degbug: topo',self.topo)
@@ -156,7 +160,7 @@ class router:
                 self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')] = INF
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = INF
                 if self.name_to_ip[node] == "":
-                    print('Dst not exist')
+                    print('I do not send my down info to',node,'because it does not exist')
                 else:
                     route_info = '1 '+self.name+' '+node+' '+str(INF)+' '+str(TTL)
                     self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
@@ -167,12 +171,15 @@ class router:
     def recover(self):
         for node in NAMELIST:
             if self.neighbour.get(node,0):
-                recover_weight = random.randint(0,50)
+                if self.name_to_ip[node] == "":
+                    recover_weight = INF
+                else:
+                    recover_weight = random.randint(1,50)
                 self.neighbour[node] = recover_weight
                 self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')] = recover_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = recover_weight
                 if self.name_to_ip[node] == "":
-                    print("Dst not exist")
+                    print('I do not send my recover info to',node,'because it does not exist')
                 else:
                     route_info = '1 '+self.name+' '+node+' '+str(recover_weight)+' '+str(TTL)
                     self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
