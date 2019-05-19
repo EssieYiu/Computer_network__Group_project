@@ -5,8 +5,8 @@ import tkinter.messagebox
 import threading
 import time
 
-my_ip="172.20.10.6"
-my_name='A'
+my_ip="192.168.199.205"
+my_name='D'
 Graph = TopoGraph()
 Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
@@ -15,7 +15,7 @@ changeable=Graph.node_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable,down)
 #my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
-my_node.neighbour={'172.20.10.2':30}
+my_node.neighbour={'192.168.199.131':30}
 my_node.DV['127.0.0.1']=1000000
 my_thread=[]
 lock=threading.RLock()

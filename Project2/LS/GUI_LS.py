@@ -47,7 +47,7 @@ def receive(routerA,receive_text):
         lock.acquire()
         msg = routerA.handle_receive()
         lock.release()
-        receive_text.insert(msg)
+        receive_text.insert(END,msg)
 def broadcast_route(routerA):
     while 1:
         lock.acquire()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     root.title = "LS router"
     my_name = 'D'
     #my_ip = '192.168.199.102'
-    my_ip = '172.19.73.186'
+    my_ip = '192.168.199.205'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
     init_topo = Graph.get_init_topo()
