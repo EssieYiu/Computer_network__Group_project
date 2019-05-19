@@ -51,7 +51,10 @@ class router:
                 self.cost[node] = dist[node]
                 next_temp = node
                 while self.neighbour.get(next_temp,0) == 0:
-                    next_temp = prev[next_temp]
+                    if prev.get(next_temp,0):
+                        next_temp = prev[next_temp]
+                    else:
+                        break
                 self.next_jump[node] = next_temp
 
     def handle_receive(self):
@@ -59,15 +62,19 @@ class router:
         message = data.decode()
         message = message.split(' ',4)
         #meaningful message, decide whether to send or print
+        rtn_msg = ""
         if message[0] == '0':
             if message[2] == self.ip:
                 print("Receive message from",message[1],'debug:',fhost)
                 print(message[3])
+                rtn_msg = "Receive message from "+message[1]
             else:
                 print("Help forward message from",message[1],"to",message[2])
+                rtn_msg = "Help forward message from "+message[1]+" to "+message[2]
                 dst = message[2]
                 if dst == "":
                     print('Dst not exist')
+                    rtn_msg = "Dst not exist"
                 else:
                     self.sck_output.sendto(data,(dst,RECVPORT))
         #broadcast route weight, change topo and neighbour
@@ -80,6 +87,7 @@ class router:
             if host1 == self.ip:
                 self.neighbour[host1] = weight
                 print('one of my neibour down/recover,my route to it now:',weight)
+                rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)
             #forward out, send to all its neighbour,with TTL -1
             if int(message[4]) > 0:
                 message[4] = str(int(message[4]) - 1)
@@ -90,28 +98,35 @@ class router:
                         next_stop_ip = self.name_to_ip[next_stop]
                         if next_stop_ip == "":
                             print('Dst not exist')
+                            rtn_msg = "Dst not exist"
                         else:
                             self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
+        return rtn_msg
 
     def send_meaningful_message(self,msg,dst_in):
         #message = input("Please enter your message to send")
         #dst = input("Please enter the destination(A/B/C/D/E),but not yourself:")
         message = msg
         dst = dst_in
+        rtn_msg = ""
         if dst not in NAMELIST:
-            print("Invalid destionation!")
+            rtn_msg = "Invalid destination!"
         elif dst == self.name:
-            print("You should not send message to yourself")
+            rtn_msg = "You should not send message to yourself"
         else:
             pack_msg = '0 '+self.ip+' '+self.name_to_ip[dst]+' '+message
             next_stop = self.next_jump[dst]
             if self.cost[dst] >= INF:
-                print("Send message failed,destination can not reach")
-            else:
-                self.sck_output.sendto(pack_msg.encode(),(self.name_to_ip[next_stop],RECVPORT))
-                print("Sending message to",dst)
-                print("Firstly send to",next_stop)
+                rtn_msg = "Send message failed,destination can not reach"
 
+            elif next_stop != "":
+                self.sck_output.sendto(pack_msg.encode(),(self.name_to_ip[next_stop],RECVPORT))
+                rtn_msg = "Sending message to "+dst+". Firstly send to "+next_stop
+
+            else:
+                rtn_msg = "Dst not exist"
+        print(rtn_msg)
+        return rtn_msg
     #broadcast all the linking route,first send to its neibour
     def broadcast(self):
         for node in NAMELIST:
@@ -131,6 +146,7 @@ class router:
                 new_weight = random.randint(0,50)
                 self.neighbour[node] = new_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = new_weight
+                print('degbug: topo',self.topo)
 
     #notice that once if down, can not change route anymore
     def down(self):

@@ -36,10 +36,11 @@ def recover(routerA,msg_var):
 def change_road(routerA,msg_var):
     msg_var.set("I chagne the route")
     routerA.change_route()
-def send_message(routerA,msg_send,dst_send):
+def send_message(routerA,msg_send,dst_send,msg_var):
     msg = msg_send.get()
     dst = dst_send.get()
-    routerA.send_meaningful_message(msg,dst)
+    result = routerA.send_meaningful_message(msg,dst)
+    msg_var.set(result)
 def receive(routerA,receive_text):
     while 1:
         lock.acquire()
@@ -55,7 +56,7 @@ def broadcast_route(routerA):
 
 if __name__ == "__main__":
     root = Tk()
-
+    root.title = "LS router"
     my_name = 'D'
     #my_ip = '192.168.199.102'
     my_ip = '172.19.73.186'
@@ -75,38 +76,40 @@ if __name__ == "__main__":
     print('router next jump:',my_router.next_jump)
     my_router.broadcast()
 
-    label_ip = Label(root,text="my ip address")
-    label_name = Label(root,text="my name")
-    label_ip.pack()
-    label_name.pack()
+    label_ip = Label(root,text="my ip address:"+my_ip)
+    label_name = Label(root,text="my name:"+my_name)
+    label_ip.grid(row = 0, column = 0,columnspan =2,sticky=W+E)
+    label_name.grid(row = 0, column = 2,sticky=W)
 
+    Label(root,text="status message:").grid(row = 1,column = 0,sticky=E,pady=5)
     msg_var = StringVar()
     status_msg = Label(root,text="Here is the status msg",textvariable = msg_var)
-    status_msg.pack()
+    status_msg.grid(row = 1, column = 1,pady=5)
 
     route_info_list = Listbox(root)
-    route_info_list.pack()
+    route_info_list.grid(row = 2, column = 0,columnspan = 3)
 
     down_Btn = Button(root,text="down",command = lambda:down(my_router,msg_var))
-    down_Btn.pack()
+    down_Btn.grid(row = 4,column = 0,sticky=E,pady=5)
     recover_Btn = Button(root,text="recover",command = lambda:recover(my_router,msg_var))
-    recover_Btn.pack()
+    recover_Btn.grid(row = 4,column = 1,pady=5)
     change_route_Btn = Button(root,text="change route",command = lambda:change_road(my_router,msg_var))
-    change_route_Btn.pack()
+    change_route_Btn.grid(row = 4,column = 2,sticky=W,pady=5)
 
-    Label(root,text="msg send").pack()
+    Label(root,text="msg send:").grid(row = 5,column = 0,sticky=E)
     msg_send = Entry(root)
-    msg_send.pack()
+    msg_send.grid(row = 5,column = 1)
 
-    Label(root,text="dst send").pack()
+    Label(root,text="dst send:").grid(row = 6,column = 0,sticky=E)
     dst_send = Entry(root)
-    dst_send.pack()
+    dst_send.grid(row = 6,column = 1)
 
-    send_Btn = Button(root,text="send message",command = lambda:send_message(my_router,msg_send,dst_send))
-    send_Btn.pack()
+    send_Btn = Button(root,text="send message",command = lambda:send_message(my_router,msg_send,dst_send,msg_var))
+    send_Btn.grid(row = 5,column = 2,rowspan=2)
 
-    receive_info = Text(root)
-    receive_info.pack()
+    Label(root,text="Receive information:").grid(row = 8,column = 1,sticky=W+E)
+    receive_info = Text(root,width = 50,height = 25)
+    receive_info.grid(row = 9,column = 0,columnspan = 3)
 
     my_thread = []
     Thread1 = threading.Thread(target=broadcast_route,args=(my_router,))
