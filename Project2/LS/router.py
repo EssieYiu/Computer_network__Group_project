@@ -51,7 +51,7 @@ class router:
             if node != self.name:
                 self.cost[node] = dist[node]
                 next_temp = node
-                while self.neighbour.get(next_temp,0) == 0:
+                while prev.get(node,0) and prev[node] != self.name:
                     if prev.get(next_temp,0):
                         next_temp = prev[next_temp]
                     else:
