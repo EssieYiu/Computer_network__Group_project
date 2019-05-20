@@ -6,17 +6,16 @@ import tkinter.messagebox
 import threading
 import time
 
-
-my_ip="192.168.199.102"
-my_name='E'
+my_ip="192.168.199.131"
+my_name='A'
 Graph = TopoGraph()
 Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
 changeable=Graph.node_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable)
-my_node.neighbour={'192.168.199.131':34,'192.168.199.165':34}
-#my_node.DV['127.0.0.1']=1000000
+my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
+
 my_thread=[]
 lock=threading.RLock()
 #sendDV线程调用
@@ -25,7 +24,6 @@ def sendDV_period(node):
     while 1:
         time.sleep(1)
         node.send_DV()
-        print(node.neighbour)
         form_DV_list(node)
         time.sleep(12)
 #接收线程调用
@@ -118,7 +116,7 @@ def recover(node):
 def form_DV_list(node):
     global DVinfo
     DVinfo.delete(0,tk.END)
-    head="Dest   Cost       Next jump"
+    head="Dest    Cost       Next jump"
     DVinfo.insert(tk.END,head)
     for n in ALL:
         if n!=node.name:
@@ -129,11 +127,12 @@ def form_DV_list(node):
                 next_name=ALL[IP.index(next)]
             else:
                 next_name='None'
-            if node.DV[ip]==INFINITE:
-                DV='  '+n+'      '+str(node.DV[ip])+'      '+next_name
+            if node.DV[ip]>=INFINITE:
+                DV='  '+n+'       '+'INF'+'          '+next_name
             else:
-                DV='  '+n+'      '+str(node.DV[ip])+'               '+next_name
+                DV='  '+n+'       '+str(node.DV[ip])+'               '+next_name
             DVinfo.insert(tk.END,DV)
+
 #---------------------------------------后台---------------------------------------
 window2=tk.Tk()
 window2.title('Router')
@@ -143,7 +142,7 @@ my_font= tkf.Font(family='Arial',size=10,weight =tkf.BOLD)
 #1.DV信息（收到的，周期发出自己的）
 DV_hint=tk.Label(window2,font=my_font,text="DV info         ")
 DV_hint.grid(row=1,column=0,sticky=tk.E)
-DVinfo=tk.Listbox(window2,font=my_font,width=30)
+DVinfo=tk.Listbox(window2,font=my_font,width=25)
 DVinfo.grid(row=1,column=1,pady=8)
 
 #2.转发消息（帮谁转发了消息）
@@ -197,6 +196,8 @@ dest_entry.pack(side=tk.LEFT)
 sbut=tk.Button(fm2,text='Send',width=10,height=1,font=my_font,command=lambda:hit_sbut(my_node))   #发送按钮
 sbut.pack(side=tk.LEFT)
 fm2.pack(ipadx=15,fill=tk.BOTH)
+
+
 
 
 for thread in my_thread:
