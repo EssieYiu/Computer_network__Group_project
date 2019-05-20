@@ -35,6 +35,7 @@ class router:
             dist[node] = INF
         dist[self.name] = 0
         queue = ['A','B','C','D','E']
+        print('debug:topo',self.topo)
         while len(queue):
             #deletemin
             cur_node = queue[0]
@@ -80,27 +81,30 @@ class router:
                     self.sck_output.sendto(data,(dst,RECVPORT))
         #broadcast route weight, change topo and neighbour
         elif message[0] == '1':
-            host1 = message[1]
-            host2 = message[2]
-            weight = int (message[3])
-            self.topo[ord(host1)-ord('A')][ord(host2)-ord('A')] = weight
-            #only receive neibour down or recover info will enter this if
-            if host1 == self.ip:
-                self.neighbour[host1] = weight
-                print('one of my neibour down/recover,my route to it now:',weight)
-                rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)+"\n"
-            #forward out, send to all its neighbour,with TTL -1
-            if int(message[4]) > 0:
-                message[4] = str(int(message[4]) - 1)
-                message = ' '.join(message)
-                for node in NAMELIST:
-                    if self.neighbour.get(node,0):
-                        next_stop = self.next_jump[node]
-                        next_stop_ip = self.name_to_ip[next_stop]
-                        if next_stop_ip == "":
-                            rtn_msg = rtn_msg+" Forward broadcast info failed, because"+next_stop+" does not exist"
-                        else:
-                            self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
+            if self.down_status == True:
+                rtn_msg = "I am now in down status, will not change my route info"
+            else:
+                host1 = message[1]
+                host2 = message[2]
+                weight = int (message[3])
+                self.topo[ord(host1)-ord('A')][ord(host2)-ord('A')] = weight
+                #only receive neibour down or recover info will enter this if
+                if host1 == self.ip:
+                    self.neighbour[host1] = weight
+                    print('one of my neibour down/recover,my route to it now:',weight)
+                    rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)+"\n"
+                #forward out, send to all its neighbour,with TTL -1
+                if int(message[4]) > 0:
+                    message[4] = str(int(message[4]) - 1)
+                    message = ' '.join(message)
+                    for node in NAMELIST:
+                        if self.neighbour.get(node,0):
+                            next_stop = self.next_jump[node]
+                            next_stop_ip = self.name_to_ip[next_stop]
+                            if next_stop_ip == "":
+                                rtn_msg = rtn_msg+" Forward broadcast info failed, because"+next_stop+" does not exist"
+                            else:
+                                self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
         print(rtn_msg)
         return rtn_msg
 
@@ -154,6 +158,7 @@ class router:
 
     #notice that once if down, can not change route anymore
     def down(self):
+        print("debug:enter down function")
         for node in NAMELIST:
             if self.neighbour.get(node,0):
                 self.neighbour[node] = INF
