@@ -6,6 +6,7 @@ import tkinter.messagebox
 import threading
 import time
 
+
 my_ip="192.168.199.131"
 my_name='A'
 Graph = TopoGraph()
@@ -166,10 +167,11 @@ changebut.grid(row=4,column=1,pady=2)
 downbut=tk.Button(window2,text='Down',width=15,height=2,font=my_font,command=lambda:go_down(my_node))
 downbut.grid(row=5,column=1,pady=2)
 rebut=tk.Button(window2,text='Recover',width=15,height=2,font=my_font,command=lambda:recover(my_node))
+rebut.grid(row=6,column=1,pady=2)
 
+#显示name和ip
 ip_hint=tk.Label(window2,font=my_font,text="My ip: "+my_node.ip)
 ip_hint.grid(row=4,column=0,sticky=tk.W)
-
 name_hint=tk.Label(window2,font=my_font,text='My name: '+my_node.name)
 name_hint.grid(row=5,column=0,sticky=tk.W)
 
@@ -195,8 +197,6 @@ sbut=tk.Button(fm2,text='Send',width=10,height=1,font=my_font,command=lambda:hit
 sbut.pack(side=tk.LEFT)
 fm2.pack(ipadx=15,fill=tk.BOTH)
 
-
-rebut.grid(row=6,column=1,pady=2)
 
 for thread in my_thread:
     time.sleep(2)
