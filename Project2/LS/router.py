@@ -98,7 +98,8 @@ class router:
                     message[4] = str(int(message[4]) - 1)
                     message = ' '.join(message)
                     for node in NAMELIST:
-                        if self.neighbour.get(node,0):
+                        #add some condition, not forward to host1 and host2 as they already known route change
+                        if self.neighbour.get(node,0) and node != host1 and node != host2:
                             next_stop = self.next_jump[node]
                             next_stop_ip = self.name_to_ip[next_stop]
                             if next_stop_ip == "":
