@@ -1,6 +1,7 @@
 from My_node import *
 from TopoGraph import TopoGraph
 import tkinter as tk
+import tkinter.font as tkf
 import tkinter.messagebox
 import threading
 import time
@@ -14,10 +15,9 @@ changeable=Graph.node_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable)
 my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
-my_node.DV['127.0.0.1']=1000000
+#my_node.DV['127.0.0.1']=1000000
 my_thread=[]
 lock=threading.RLock()
-
 #sendDV线程调用
 def sendDV_period(node):
     global DVinfo
@@ -132,62 +132,70 @@ def form_DV_list(node):
             else:
                 DV='  '+n+'      '+str(node.DV[ip])+'               '+next_name
             DVinfo.insert(tk.END,DV)
-
-window2=tk.Tk()#后台
+#---------------------------------------后台---------------------------------------
+window2=tk.Tk()
 window2.title('Router')
-window2.geometry('600x500')
-
+window2.geometry('600x480')
+my_font= tkf.Font(family='Arial',size=10,weight =tkf.BOLD)
 #三个显示窗口
 #1.DV信息（收到的，周期发出自己的）
-DV_hint=tk.Label(window2,text="DV info        ")
-DV_hint.grid(row=0,column=0,sticky=tk.E)
-DVinfo=tk.Listbox(window2,width=30)
-DVinfo.grid(row=0,column=1,pady=8)
+DV_hint=tk.Label(window2,font=my_font,text="DV info         ")
+DV_hint.grid(row=1,column=0,sticky=tk.E)
+DVinfo=tk.Listbox(window2,font=my_font,width=30)
+DVinfo.grid(row=1,column=1,pady=8)
 
 #2.转发消息（帮谁转发了消息）
-for_hint=tk.Label(window2,text="Forwarding info")
-for_hint.grid(row=1,column=0)
+for_hint=tk.Label(window2,text="Forwarding info",font=my_font)
+for_hint.grid(row=2,column=0)
 forwardInfo=tk.Text(window2,width=50,height=5)
-forwardInfo.grid(row=1,column=1,pady=8)
+forwardInfo.grid(row=2,column=1,pady=8)
 
 #3.链路cost、down和recover
-link_hint=tk.Label(window2,text="      Link and status info")
-link_hint.grid(row=2,column=0,sticky=tk.E+tk.W) 
+link_hint=tk.Label(window2,text="      Link and status info",font=my_font)
+link_hint.grid(row=0,column=0,sticky=tk.E+tk.W) 
 msg_var = tk.StringVar()
-link_status=tk.Label(window2,text="Here is the status msg",textvariable = msg_var) #一行，显示链路状态
-link_status.grid(row=2,column=1,pady=8)
+link_status=tk.Label(window2,text="Here is the status msg",textvariable = msg_var,font=my_font) #一行，显示链路状态
+link_status.grid(row=0,column=1,pady=8)
 
+#三个按钮
+#1.更改链路cost
+#2.down
+#3.recover
+changebut=tk.Button(window2,text='Change link cost',width=15,height=2,font=my_font,command=lambda:change(my_node))
+changebut.grid(row=4,column=1,pady=2)
+downbut=tk.Button(window2,text='Down',width=15,height=2,font=my_font,command=lambda:go_down(my_node))
+downbut.grid(row=5,column=1,pady=2)
+rebut=tk.Button(window2,text='Recover',width=15,height=2,font=my_font,command=lambda:recover(my_node))
 
+ip_hint=tk.Label(window2,font=my_font,text="My ip: "+my_node.ip)
+ip_hint.grid(row=4,column=0,sticky=tk.W)
+
+name_hint=tk.Label(window2,font=my_font,text='My name: '+my_node.name)
+name_hint.grid(row=5,column=0,sticky=tk.W)
+
+#---------------------------------------前台---------------------------------------
 window=tk.Toplevel(height=600,width=300)  #前台
 window.title('Host - Message')
 
 s_feedback=tk.Text(window,height=20) #最大的显示窗口
 s_feedback.pack(fill=tk.X)   
 fm1=tk.Frame(window)
-message_hint=tk.Label(fm1,text="Enter message here:")
+message_hint=tk.Label(fm1,text="Enter message here:",font=my_font)
 message_hint.pack(side=tk.LEFT)
 message_entry=tk.Entry(fm1)  #要发的消息输入框
 message_entry.pack(side=tk.LEFT)
 fm1.pack(fill=tk.BOTH)
 
 fm2=tk.Frame(window)
-dest_hint=tk.Label(fm2,text="Destination(A/B/C/D/E):")
+dest_hint=tk.Label(fm2,text="Destination(A/B/C/D/E):",font=my_font)
 dest_hint.pack(side=tk.LEFT)
 dest_entry=tk.Entry(fm2,show=None)   #目的地名字输入框
 dest_entry.pack(side=tk.LEFT)
-sbut=tk.Button(fm2,text='Send',width=10,height=1,command=lambda:hit_sbut(my_node))   #发送按钮
+sbut=tk.Button(fm2,text='Send',width=10,height=1,font=my_font,command=lambda:hit_sbut(my_node))   #发送按钮
 sbut.pack(side=tk.LEFT)
 fm2.pack(ipadx=15,fill=tk.BOTH)
 
-#三个按钮
-#1.更改链路cost
-#2.down
-#3.recover
-changebut=tk.Button(window2,text='Change link cost',width=15,height=2,command=lambda:change(my_node))
-changebut.grid(row=4,column=1,pady=2)
-downbut=tk.Button(window2,text='Down',width=15,height=2,command=lambda:go_down(my_node))
-downbut.grid(row=5,column=1,pady=2)
-rebut=tk.Button(window2,text='Recover',width=15,height=2,command=lambda:recover(my_node))
+
 rebut.grid(row=6,column=1,pady=2)
 
 for thread in my_thread:
