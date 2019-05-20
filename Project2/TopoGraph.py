@@ -1,16 +1,13 @@
 import random
-#IP=["172.26.5.44","172.26.81.151","3","4","5"]
-A= "192.168.199.131"
-B= "127.0.0.1"
-C = "127.0.0.2"
-D= "192.168.199.205"
-E = "192.168.199.102"
+from My_node import IP
+A = IP[0]
+B = IP[1]
+C = IP[2]
+D = IP[3]
+E = IP[4]
 class TopoGraph(object):
     def __init__(self):
-        #self.N = n
-        #self.E=e
         #名字和ip的对应关系
-        #x=input("Enter ip:")
         self.name_ip={'A':A,'B':B,'C':C,'D':D,'E':E}
         #边和cost的对应关系
         self.link_cost={}
@@ -45,9 +42,3 @@ class TopoGraph(object):
 
     def node_changeable_route(self,node_ip):
         return self.ip_changeable_route[node_ip]
-
-    def get_down(self,name):
-        if name=='A':
-            return True
-        else:
-            return False
