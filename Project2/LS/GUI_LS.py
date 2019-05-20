@@ -35,8 +35,11 @@ def recover(routerA,msg_var):
     else:
         msg_var.set("I am well, no need to recover")
 def change_road(routerA,msg_var):
-    msg_var.set("I chagne the route")
-    routerA.change_route()
+    if routerA.down_status == True:
+            msg_var.set("I am down now,can not change route")
+    else:
+        msg_var.set("I chagne the route")
+        routerA.change_route()
 def send_message(routerA,msg_send,dst_send,msg_var):
     msg = msg_send.get()
     dst = dst_send.get()
