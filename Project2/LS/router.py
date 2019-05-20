@@ -89,7 +89,7 @@ class router:
                 weight = int (message[3])
                 self.topo[ord(host1)-ord('A')][ord(host2)-ord('A')] = weight
                 #only receive neibour down or recover info will enter this if
-                if host1 == self.ip:
+                if host1 == self.name:
                     self.neighbour[host1] = weight
                     print('one of my neibour down/recover,my route to it now:',weight)
                     rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)+"\n"
