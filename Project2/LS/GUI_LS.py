@@ -59,9 +59,9 @@ if __name__ == "__main__":
     root = Tk()
     my_font = tkFont.Font(family='Arial',size=10,weight =tkFont.BOLD)
     root.title = "LS router"
-    my_name = 'E'
+    my_name = 'D'
     #my_ip = '192.168.199.102'
-    my_ip = '192.168.199.102'
+    my_ip = '192.168.199.205'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
     init_topo = Graph.get_init_topo()
