@@ -25,6 +25,7 @@ def sendDV_period(node):
     while 1:
         time.sleep(1)
         node.send_DV()
+        print(node.neighbour)
         form_DV_list(node)
         time.sleep(12)
 #接收线程调用
