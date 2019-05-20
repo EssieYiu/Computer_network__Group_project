@@ -4,9 +4,9 @@ import random
 BUFSIZE=1024
 RECVPORT = 8080
 SENDPORT = 8081
-IP=["192.168.199.131","192.168.39.128","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
+IP=["192.168.199.131","192.168.199.165","127.0.0.1","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
-INFINITE=1000000
+INFINITE=200
 class Node(object):
     def __init__(self,name='A',ip="127.0.0.1",neigh={},changeable=[]):
         print("* Node __init__ begins！")
@@ -62,7 +62,7 @@ class Node(object):
             return "Error: cannot reach the destination!\n\n"
         nextNode=ALL[IP.index(nextIP)]
         cost=self.DV[destIP]
-        if cost==INFINITE or nextNode=='None':
+        if cost>=INFINITE or nextNode=='None':
            return "Error: cannot reach the destination!\n\n"
         else:
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
@@ -170,10 +170,10 @@ class Node(object):
                     value=linkCost+DVneighbour.get(key,0)
                     next=neigh  #下一跳节点变为这个邻居
                     
-            if self.DV[key]!=value:
-                change=True
-                self.DV[key] = value #add 将修改的value值写回去
-                self.table[key]=next #目的地，下一跳节点变化   
+            #if self.DV[key]!=value:
+            change=True
+            self.DV[key] = value #add 将修改的value值写回去
+            self.table[key]=next #目的地，下一跳节点变化   
         if change==True:
             print("* My DV has changed!")
 
@@ -192,6 +192,7 @@ class Node(object):
         print("\n* Send DV message to all neighbours!")
         print("my_DV",self.DV)
         print("my_table",self.table)
+        print('my neighbour',self.neighbour)
         #return "* Send DV message to all neighbours!\n"
 
 
