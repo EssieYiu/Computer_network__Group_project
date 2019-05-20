@@ -138,6 +138,7 @@ class Node(object):
             print("\n* Neighbour "+tmp_name+" is down!\n")
             self.recompute_DV()
             return(3,"Neighbour "+tmp_name+" is down!")
+
         #接收到邻居发来的recover
         elif omessage[0]=='4':
             tup=omessage.split(' ',2)
@@ -146,7 +147,7 @@ class Node(object):
             tmp_ip=IP[tmp_index]
             new_weight=int(tup[2])    #获得新的权重 ！！      
             print("new_weight",new_weight)
-            self.neighbour[tmp_ip]=new_weight    #更新
+            self.neighbour[tmp_ip]=new_weight    #到这个邻居的cost 更新
             print("\n* Neighbour "+tmp_name+" "+tmp_ip+" is back!\n")
             self.recompute_DV() #重计算
             return(3,"Neighbour "+tmp_name+" is back!")
@@ -195,7 +196,7 @@ class Node(object):
 
 
     def pack_message(self,message,destIP):
-        message_to_send = '1 '+self.ip+' '+destIP+' '+message
+        message_to_send = '1 '+self.ip+' '+destIP+' '+message   #类型_自己ip_目的ip_消息
         return message_to_send.encode()
 
     def unpack_message(self,message):
@@ -209,7 +210,7 @@ class Node(object):
         for neibor in self.changeable_route:
             new_weight = random.randint(1,50)
             self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
-            message = '2 '+self.name+' '+str(new_weight)  #!!!信息格式未规范，需要后续修改
+            message = '2 '+self.name+' '+str(new_weight)  #类型_名字_新权重
             self.sck_output.sendto(message.encode(),(neibor,RECVPORT)) #告知这个邻居
         self.recompute_DV()
         print("* Some link cost has changed!")
@@ -219,7 +220,7 @@ class Node(object):
 
     def go_down(self):
         for neibor in self.neighbour.keys():    #告诉所有邻居我down了
-           message='3 '+self.name
+           message='3 '+self.name   #类型_名字
            self.neighbour[neibor]=INFINITE
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
         self.recompute_DV()
@@ -231,7 +232,7 @@ class Node(object):
         for neibor in self.neighbour.keys():    #告诉所有邻居我back了
            new_weight = random.randint(1,50)
            self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
-           message = '4 '+self.name+' '+str(new_weight)  #!!!信息格式未规范，需要后续修改
+           message = '4 '+self.name+' '+str(new_weight)  #类型_名字_新权重
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
         self.recompute_DV() #需要吗？？
         
