@@ -78,8 +78,8 @@ class Node(object):
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
-        index=IP.index(fhost)
-        fname=ALL[index]
+        #index=IP.index(fhost)
+        #fname=ALL[index]
         omessage=data.decode()
        
         #接收到的是message
@@ -104,38 +104,52 @@ class Node(object):
 
         #接收到的是邻居发来的DV信息
         elif omessage[0]=='0':
-            DVneighbour=json.loads(omessage[1:])
-
-            self.DV_neighbour[index]=DVneighbour
-            print("\n* Received DV message from "+fname+' '+fhost+'\n'+'DVneighbour: '+str(DVneighbour)+'\n')
+            tup=omessage.split(' ',2)
+            DVneighbour=json.loads(tup[2])
+            tmp_name=tup[1]
+            tmp_index=ALL.index(tmp_name)
+            tmp_ip=IP[tmp_index]
+            self.DV_neighbour[tmp_index]=DVneighbour
+            print("\n* Received DV message from "+tmp_name+' '+tmp_ip+'\n'+'DVneighbour: '+str(DVneighbour)+'\n')
             self.recompute_DV()
             return(2,"")
 
 
         #接收到的是邻居发来的link cost改变,更新self.neighbour
         elif omessage[0]=='2':
-            new_weight=int((omessage.split(' ',2))[2])    #获得新的权重 ！！
+            tup=omessage.split(' ',2)
+            tmp_name=tup[1]
+            tmp_index=ALL.index(tmp_name)
+            tmp_ip=IP[tmp_index]
+            new_weight=int(tup[2])    #获得新的权重 ！！
             print("new_weight",new_weight)
-            self.neighbour[fhost]=new_weight    #更新
+            self.neighbour[tmp_ip]=new_weight    #更新
             print("\n* New local link cost\n")
             self.recompute_DV() #重计算
-            return(3,"New local link cost to"+fname)
-
-        elif omessage[0]=='4':
-            new_weight=int((omessage.split(' ',2))[2])    #获得新的权重 ！！
-            print("new_weight",new_weight)
-            self.neighbour[fhost]=new_weight    #更新
-            print("\n* Neighbour "+fname+" "+fhost+" is back!\n")
-            self.recompute_DV() #重计算
-            return(3,"Neighbour "+fname+" is back!")
-        #接收到邻居发来的
+            return(3,"New local link cost to"+tmp_name)
+   
+        #接收到邻居发来的down
         elif omessage[0]=='3':
-            self.neighbour[fhost]=INFINITE
-            #self.DV_neighbour[index]={}
-            print("\n* Neighbour "+fname+fhost+" is down!\n")
+            tup=omessage.split(' ',1)
+            tmp_name=tup[1]
+            tmp_index=ALL.index(tmp_name)
+            tmp_ip=IP[tmp_index]
+            self.neighbour[tmp_ip]=INFINITE
+            print("\n* Neighbour "+tmp_name+" is down!\n")
             self.recompute_DV()
-            return(3,"Neighbour "+fname+" is down!")
-
+            return(3,"Neighbour "+tmp_name+" is down!")
+        #接收到邻居发来的recover
+        elif omessage[0]=='4':
+            tup=omessage.split(' ',2)
+            tmp_name=tup[1]
+            tmp_index=ALL.index(tmp_name)
+            tmp_ip=IP[tmp_index]
+            new_weight=int(tup[2])    #获得新的权重 ！！      
+            print("new_weight",new_weight)
+            self.neighbour[tmp_ip]=new_weight    #更新
+            print("\n* Neighbour "+tmp_name+" "+tmp_ip+" is back!\n")
+            self.recompute_DV() #重计算
+            return(3,"Neighbour "+tmp_name+" is back!")
 
     #重新计算DV信息
     #重新计算DV信息
@@ -173,7 +187,7 @@ class Node(object):
         DVinfo=json.dumps(self.DV)
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
-            self.sck_output.sendto(('0'+DVinfo).encode(),(neigh,RECVPORT))
+            self.sck_output.sendto(('0 '+self.name+' '+DVinfo).encode(),(neigh,RECVPORT))
         print("\n* Send DV message to all neighbours!")
         print("my_DV",self.DV)
         print("my_table",self.table)
@@ -195,7 +209,7 @@ class Node(object):
         for neibor in self.changeable_route:
             new_weight = random.randint(1,50)
             self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
-            message = '2 route_weight_change '+str(new_weight)  #!!!信息格式未规范，需要后续修改
+            message = '2 '+self.name+' '+str(new_weight)  #!!!信息格式未规范，需要后续修改
             self.sck_output.sendto(message.encode(),(neibor,RECVPORT)) #告知这个邻居
         self.recompute_DV()
         print("* Some link cost has changed!")
@@ -205,7 +219,7 @@ class Node(object):
 
     def go_down(self):
         for neibor in self.neighbour.keys():    #告诉所有邻居我down了
-           message='3'
+           message='3 '+self.name
            self.neighbour[neibor]=INFINITE
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
         self.recompute_DV()
@@ -217,7 +231,7 @@ class Node(object):
         for neibor in self.neighbour.keys():    #告诉所有邻居我back了
            new_weight = random.randint(1,50)
            self.neighbour[neibor] = new_weight #修改自身存储的到这个邻居路径的权重
-           message = '4 route_recover '+str(new_weight)  #!!!信息格式未规范，需要后续修改
+           message = '4 '+self.name+' '+str(new_weight)  #!!!信息格式未规范，需要后续修改
            self.sck_output.sendto(message.encode(),(neibor,RECVPORT))
         self.recompute_DV() #需要吗？？
         
