@@ -111,7 +111,8 @@ class Node(object):
             tmp_ip=IP[tmp_index]
             self.DV_neighbour[tmp_index]=DVneighbour
             print("\n* Received DV message from "+tmp_name+' '+tmp_ip+'\n'+'DVneighbour: '+str(DVneighbour)+'\n')
-            self.recompute_DV()
+            self.
+            _DV()
             return(2,"")
 
 
@@ -157,7 +158,7 @@ class Node(object):
     def recompute_DV(self):
         #返回:当自己的DV改变了，返回True
         #前提是要有邻居的DV信息
-        change=False
+        #change=False
         for key in self.DV.keys():   #key为目的ip，value为从自己到目的地的cost  
             next=self.table.get(key,'None')
             value=INFINITE
@@ -171,16 +172,17 @@ class Node(object):
                     next=neigh  #下一跳节点变为这个邻居
                     
             #if self.DV[key]!=value:
-            change=True
+            #change=True
             self.DV[key] = value #add 将修改的value值写回去
             self.table[key]=next #目的地，下一跳节点变化   
-        if change==True:
-            print("* My DV has changed!")
+
+        #if change==True:
+        print("* My DV has changed!")
 
         print('my DV after recompute:',self.DV)
         print('my_table',self.table)
         print('\n\n')
-        return change
+        #return change
 
     #交换DV信息
     #需要周期性调用
@@ -192,7 +194,6 @@ class Node(object):
         print("\n* Send DV message to all neighbours!")
         print("my_DV",self.DV)
         print("my_table",self.table)
-        print('my neighbour',self.neighbour)
         #return "* Send DV message to all neighbours!\n"
 
 
