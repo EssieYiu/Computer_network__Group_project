@@ -110,7 +110,7 @@ class Node(object):
         #接收到的是邻居发来的DV信息
         #elif omessage[0]=='0':
         elif tup[0]=='0':            
-            DVneighbour=json.loads(tup[2])
+            DVneighbour=tup[2]
             self.DV_neighbour[tmp_index]=DVneighbour
             print("\n* Received DV message from "+tmp_name+' '+tmp_ip+'\n'+'DVneighbour: '+str(DVneighbour)+'\n')
             self.recompute_DV()
@@ -183,7 +183,7 @@ class Node(object):
     #交换DV信息
     #需要周期性调用
     def send_DV(self):
-        DVinfo=json.dumps(self.DV)
+        DVinfo=self.DV
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
             self.sck_output.sendto(('0 '+self.name+' '+DVinfo).encode(),(neigh,RECVPORT))
