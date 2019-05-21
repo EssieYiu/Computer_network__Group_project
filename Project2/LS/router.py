@@ -51,11 +51,8 @@ class router:
             if node != self.name:
                 self.cost[node] = dist[node]
                 next_temp = node
-                while prev.get(node,0) and prev[node] != self.name:
-                    if prev.get(next_temp,0):
-                        next_temp = prev[next_temp]
-                    else:
-                        break
+                while prev.get(next_temp,0) and prev[next_temp] != self.name:
+                    next_temp = prev[next_temp]
                 self.next_jump[node] = next_temp
 
     def handle_receive(self):
