@@ -72,7 +72,10 @@ class router:
                 print("Help forward message from",message[1],"to",message[2])
                 rtn_msg = "Help forward message from "+message[1]+" to "+message[2]
                 dst = message[2]
-                next_stop = self.next_jump[self.name_to_ip.index(dst)]
+                for n in NAMELIST:
+                    if self.name_to_ip[n] == dst:
+                        dst_name = n
+                next_stop = self.next_jump[dst_name]
                 next_stop_ip = self.name_to_ip[next_stop]
                 if next_stop_ip == "":
                     print('Forward fail, because dst:',dst,"not exist")
