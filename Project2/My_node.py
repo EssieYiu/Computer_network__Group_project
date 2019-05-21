@@ -4,7 +4,7 @@ import random
 BUFSIZE=1024
 RECVPORT = 8080
 SENDPORT = 8081
-IP=["192.168.199.131","192.168.199.165","192.168.199.121","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
+IP=["192.168.199.131","192.168.199.165","192.168.199.137","192.168.199.205","192.168.199.102"]   #依次存储A,B,C,D,E的ip
 ALL="ABCDE"
 INFINITE=200
 class Node(object):
@@ -67,7 +67,7 @@ class Node(object):
         else:
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
             towhere="* Message: "+message+"\n* To:"+dest+" "+destIP+'\n\n'
-            first="* Firstly, send message to next node "+nextNode+": \n"+nextIP+'\n'
+            first="* Firstly, send message to next node "+nextNode+": "+nextIP+'\n'
             if destIP!=nextIP:
                 return first+towhere
                 print(first+towhere)
@@ -99,8 +99,8 @@ class Node(object):
                 #查路由表，转发
                 nextIP=self.table[destIP]
                 self.sck_output.sendto(data,(nextIP,RECVPORT))
-                print('\n* Help sent message\n '+ 'Src: '+srcIP+' Dest: '+destIP+'\n\n')
-                return (1,'* Help sent message\n '+ 'Src: '+src_name+' Dest: '+dest_name+'\n\n')
+                print('\n* Help forward message\n '+ 'Src: '+srcIP+' Dest: '+destIP+'\n\n')
+                return (1,'* Help forward message\n '+ 'Src: '+src_name+' Dest: '+dest_name+'\n\n')
 
         #接收到的是邻居发来的DV信息
         elif omessage[0]=='0':
