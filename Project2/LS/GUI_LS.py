@@ -23,8 +23,8 @@ def compute_LS(routerA,LB):
                         show_cost = str(routerA.cost[n])
                 route_info = '  '+n+'      '+show_cost+'         '+routerA.next_jump[n]
                 LB.insert(END,route_info)
-        #print("Recompute LS. cost:",routerA.cost)
-        #print('next jump:',routerA.next_jump)
+        print("Recompute LS. cost:",routerA.cost)
+        print('next jump:',routerA.next_jump)
 def down(routerA, msg_var):
     if routerA.down_status == False:
         msg_var.set("I am going down!")
@@ -55,8 +55,9 @@ def receive(routerA,receive_text):
         lock.acquire()
         msg = routerA.handle_receive()
         lock.release()
-        receive_text.insert(END,msg)
-        receive_text.insert(END,'\n')
+        if msg != "":
+                receive_text.insert(END,msg)
+                receive_text.insert(END,'\n')
 def broadcast_route(routerA):
     while 1:
         lock.acquire()
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     root = Tk()
     my_font = tkFont.Font(family='Arial',size=10,weight =tkFont.BOLD)
     root.title = "LS router"
-    my_name = 'C'
+    my_name = 'D'
     #my_ip = '172.19.39.53'
     my_ip = '192.168.199.205'
     Graph = LSGraph()

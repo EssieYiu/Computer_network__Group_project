@@ -61,7 +61,7 @@ class router:
         message = data.decode()
         message = message.split(' ',4)
         #meaningful message, decide whether to send or print
-        #print("debug: receive message from",fhost,message)
+        print("debug: receive message from",fhost,message)
         rtn_msg = ""
         if message[0] == '0':
             if message[2] == self.ip:
@@ -81,6 +81,7 @@ class router:
         elif message[0] == '1':
             if self.down_status == True:
                 #rtn_msg = "I am now in down status, will not change my route info"
+                print("I am now in down status,will not change my route info")
                 pass
             else:
                 host1 = message[1]
@@ -104,6 +105,7 @@ class router:
                             if next_stop_ip == "":
                                 rtn_msg = rtn_msg+" Forward broadcast info failed, because"+next_stop+" does not exist"
                             else:
+                                print("Forward boardcast message to",next_stop)
                                 self.sck_output.sendto(message.encode(),(next_stop_ip,RECVPORT))
         print(rtn_msg)
         return rtn_msg
@@ -124,7 +126,7 @@ class router:
             if self.cost[dst] >= INF:
                 rtn_msg = "Send message failed,destination can not reach"
 
-            elif next_stop != "":
+            elif self.name_to_ip[next_stop] != "":
                 self.sck_output.sendto(pack_msg.encode(),(self.name_to_ip[next_stop],RECVPORT))
                 rtn_msg = "Sending message to "+dst+". Firstly send to "+next_stop
 
@@ -144,7 +146,7 @@ class router:
                         else:
                             self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
                         if self.down_status == True:
-                            #print("I am down, broadcast one more info")
+                            print("I am down, broadcast one more info")
                             route_info = '1 '+nei+' '+self.name+' '+str(self.topo[ord(nei)-ord('A')][ord(self.name)-ord('A')])+' '+str(TTL)
                             if self.name_to_ip[node] == "":
                                 print("I can not send broadcast info to",node,"because it doesn't exist")
