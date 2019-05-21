@@ -135,19 +135,21 @@ class router:
     def broadcast(self):
         for node in NAMELIST:
             if self.neighbour.get(node,0):
-                route_info = '1 '+self.name+' '+node+' '+str(self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')])+' '+str(TTL)
-                if self.name_to_ip[node] == "":
-                    print("I can not send broadcast info to",node,"because it doesn't exist")
-                else:
-                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
-                if self.down_status == True:
-                    print("I am down, broadcast one more info")
-                    route_info = '1 '+node+' '+self.name+' '+str(self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')])+' '+str(TTL)
-                    if self.name_to_ip[node] == "":
-                        print("I can not send broadcast info to",node,"because it doesn't exist")
-                    else:
-                        print('debug: I send one more route info')
-                        self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                for nei in NAMELIST:
+                    if self.neighbour.get(nei,0):
+                        route_info = '1 '+self.name+' '+nei+' '+str(self.topo[ord(self.name)-ord('A')][ord(nei)-ord('A')])+' '+str(TTL)
+                        if self.name_to_ip[node] == "":
+                            print("I can not send broadcast info to",node,"because it doesn't exist")
+                        else:
+                            self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                        if self.down_status == True:
+                            print("I am down, broadcast one more info")
+                            route_info = '1 '+nei+' '+self.name+' '+str(self.topo[ord(nei)-ord('A')][ord(self.name)-ord('A')])+' '+str(TTL)
+                            if self.name_to_ip[node] == "":
+                                print("I can not send broadcast info to",node,"because it doesn't exist")
+                            else:
+                                print('debug: I send one more route info')
+                                self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
         print("Broadcast my route info")
 
     #only change its own topo and neighbour info,
