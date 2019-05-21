@@ -12,12 +12,12 @@ class TopoGraph(object):
         #边和cost的对应关系
         self.link_cost={}
         self.ip_changeable_route = {} #ip->list[nei1,nei2...],IP地址到list的映射关系，其中list存储邻居ip，表示它能修改到此邻居的路径权重
-        self.link_cost[(A,C)] = 14
-        self.link_cost[(A,D)] = 20
-        self.link_cost[(A,E)] = 15
-        self.link_cost[(B,E)] = 11
-        self.link_cost[(B,D)] = 11
-        self.link_cost[(C,D)] = 11
+        self.link_cost[(A,C)] = 4
+        self.link_cost[(A,D)] = 10
+        self.link_cost[(A,E)] = 5
+        self.link_cost[(B,E)] = 1
+        self.link_cost[(B,D)] = 1
+        self.link_cost[(C,D)] = 1
         self.ip_changeable_route[A] = [D,E]
         self.ip_changeable_route[B] = []
         self.ip_changeable_route[C] = [A,D]
