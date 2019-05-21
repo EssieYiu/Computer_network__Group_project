@@ -47,6 +47,7 @@ class router:
                 if dist[chr(i+ord('A'))] > dist[cur_node] + self.topo[ord(cur_node)-ord('A')][i]:
                     dist[chr(i+ord('A'))] = dist[cur_node] + self.topo[ord(cur_node)-ord('A')][i]
                     prev[chr(i+ord('A'))] = cur_node  
+        print('debug prev:',prev)
         for node in NAMELIST:
             if node != self.name:
                 self.cost[node] = dist[node]
@@ -134,17 +135,18 @@ class router:
     def broadcast(self):
         for node in NAMELIST:
             if self.neighbour.get(node,0):
-                route_info = '1 '+self.name+' '+node+' '+str(self.cost[node])+' '+str(TTL)
+                route_info = '1 '+self.name+' '+node+' '+str(self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')])+' '+str(TTL)
                 if self.name_to_ip[node] == "":
                     print("I can not send broadcast info to",node,"because it doesn't exist")
                 else:
                     self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
                 if self.down_status == True:
                     print("I am down, broadcast one more info")
-                    route_info = '1 '+node+' '+self.name+' '+str(self.cost[node])+' '+str(TTL)
+                    route_info = '1 '+node+' '+self.name+' '+str(self.topo[ord(node)-ord('A')][ord(self.name)-ord('A')])+' '+str(TTL)
                     if self.name_to_ip[node] == "":
                         print("I can not send broadcast info to",node,"because it doesn't exist")
                     else:
+                        print('debug: I send one more route info')
                         self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
         print("Broadcast my route info")
 
