@@ -35,7 +35,7 @@ class router:
             dist[node] = INF
         dist[self.name] = 0
         queue = ['A','B','C','D','E']
-        print('debug:topo',self.topo)
+        #print('debug:topo',self.topo)
         while len(queue):
             #deletemin
             cur_node = queue[0]
@@ -47,7 +47,7 @@ class router:
                 if dist[chr(i+ord('A'))] > dist[cur_node] + self.topo[ord(cur_node)-ord('A')][i]:
                     dist[chr(i+ord('A'))] = dist[cur_node] + self.topo[ord(cur_node)-ord('A')][i]
                     prev[chr(i+ord('A'))] = cur_node  
-        print('debug prev:',prev)
+        #print('debug prev:',prev)
         for node in NAMELIST:
             if node != self.name:
                 self.cost[node] = dist[node]
@@ -61,7 +61,7 @@ class router:
         message = data.decode()
         message = message.split(' ',4)
         #meaningful message, decide whether to send or print
-        print("debug: receive message from",fhost,message)
+        #print("debug: receive message from",fhost,message)
         rtn_msg = ""
         if message[0] == '0':
             if message[2] == self.ip:
@@ -80,7 +80,8 @@ class router:
         #broadcast route weight, change topo and neighbour
         elif message[0] == '1':
             if self.down_status == True:
-                rtn_msg = "I am now in down status, will not change my route info"
+                #rtn_msg = "I am now in down status, will not change my route info"
+                pass
             else:
                 host1 = message[1]
                 host2 = message[2]
@@ -90,7 +91,7 @@ class router:
                 if host1 == self.name:
                     self.neighbour[host2] = weight
                     print('one of my neibour down/recover,my route to it now:',weight)
-                    rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)+"\n"
+                    #rtn_msg = "one of my neibour down/recover,my route to it now:"+str(weight)+"\n"
                 #forward out, send to all its neighbour,with TTL -1
                 if int(message[4]) > 0:
                     message[4] = str(int(message[4]) - 1)
@@ -143,12 +144,12 @@ class router:
                         else:
                             self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
                         if self.down_status == True:
-                            print("I am down, broadcast one more info")
+                            #print("I am down, broadcast one more info")
                             route_info = '1 '+nei+' '+self.name+' '+str(self.topo[ord(nei)-ord('A')][ord(self.name)-ord('A')])+' '+str(TTL)
                             if self.name_to_ip[node] == "":
                                 print("I can not send broadcast info to",node,"because it doesn't exist")
                             else:
-                                print('debug: I send one more route info')
+                                #print('debug: I send one more route info')
                                 self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
         print("Broadcast my route info")
 
@@ -163,7 +164,7 @@ class router:
                     new_weight = random.randint(1,50)
                 self.neighbour[node] = new_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = new_weight
-                print('degbug: topo',self.topo)
+                #print('degbug: topo',self.topo)
                 if self.name_to_ip[node] == "":
                     print("I do not send my change info to",node,"because it does not exist")
                 else:
@@ -172,7 +173,7 @@ class router:
 
     #notice that once if down, can not change route anymore
     def down(self):
-        print("debug:enter down function")
+        #print("debug:enter down function")
         for node in NAMELIST:
             if self.neighbour.get(node,0):
                 self.neighbour[node] = INF

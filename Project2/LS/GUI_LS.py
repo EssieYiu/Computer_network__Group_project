@@ -6,6 +6,7 @@ import threading
 import time
 NAMELIST =['A','B','C','D','E']
 lock = threading.RLock() 
+INF = 10000000
 #计算完路由之后及时更新显示表的信息
 def compute_LS(routerA,LB):
     while 1:
@@ -16,10 +17,14 @@ def compute_LS(routerA,LB):
         LB.insert(END,head_info)
         for n in NAMELIST:
             if n != routerA.name:
-                route_info = '  '+n+'      '+str(routerA.cost[n])+'         '+routerA.next_jump[n]
+                if routerA.cost[n] >= INF:
+                        show_cost = "INF"
+                else:
+                        show_cost = str(routerA.cost[n])
+                route_info = '  '+n+'      '+show_cost+'         '+routerA.next_jump[n]
                 LB.insert(END,route_info)
-        print("Recompute LS. cost:",routerA.cost)
-        print('next jump:',routerA.next_jump)
+        #print("Recompute LS. cost:",routerA.cost)
+        #print('next jump:',routerA.next_jump)
 def down(routerA, msg_var):
     if routerA.down_status == False:
         msg_var.set("I am going down!")
@@ -38,7 +43,7 @@ def change_road(routerA,msg_var):
     if routerA.down_status == True:
             msg_var.set("I am down now,can not change route")
     else:
-        msg_var.set("I chagne the route")
+        msg_var.set("I change the route")
         routerA.change_route()
 def send_message(routerA,msg_send,dst_send,msg_var):
     msg = msg_send.get()
@@ -56,14 +61,14 @@ def broadcast_route(routerA):
         lock.acquire()
         routerA.broadcast()
         lock.release()
-        time.sleep(5)
+        time.sleep(2)
 
 if __name__ == "__main__":
     root = Tk()
     my_font = tkFont.Font(family='Arial',size=10,weight =tkFont.BOLD)
     root.title = "LS router"
     my_name = 'D'
-    #my_ip = '192.168.199.102'
+    #my_ip = '172.19.39.53'
     my_ip = '192.168.199.205'
     Graph = LSGraph()
     name_ip = Graph.get_name_ip()
