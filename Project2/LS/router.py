@@ -164,6 +164,11 @@ class router:
                 self.neighbour[node] = new_weight
                 self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')] = new_weight
                 print('degbug: topo',self.topo)
+                if self.name_to_ip[node] == "":
+                    print("I do not send my change info to",node,"because it does not exist")
+                else:
+                    route_info ='1 '+self.name+' '+node+' '+str(self.topo[ord(self.name)-ord('A')][ord(node)-ord('A')])+' '+str(TTL)
+                    self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
 
     #notice that once if down, can not change route anymore
     def down(self):
