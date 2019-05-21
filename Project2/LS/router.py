@@ -72,11 +72,13 @@ class router:
                 print("Help forward message from",message[1],"to",message[2])
                 rtn_msg = "Help forward message from "+message[1]+" to "+message[2]
                 dst = message[2]
-                if dst == "":
+                next_stop = self.next_jump[self.name_to_ip.index(dst)]
+                next_stop_ip = self.name_to_ip[next_stop]
+                if next_stop_ip == "":
                     print('Forward fail, because dst:',dst,"not exist")
                     rtn_msg = rtn_msg+" Forward failed, because "+dst+" not exist"
                 else:
-                    self.sck_output.sendto(data,(dst,RECVPORT))
+                    self.sck_output.sendto(data,(next_stop_ip,RECVPORT))
         #broadcast route weight, change topo and neighbour
         elif message[0] == '1':
             if self.down_status == True:
