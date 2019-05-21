@@ -56,6 +56,7 @@ def receive(routerA,receive_text):
         msg = routerA.handle_receive()
         lock.release()
         receive_text.insert(END,msg)
+        receive_text.insert(END,'\n')
 def broadcast_route(routerA):
     while 1:
         lock.acquire()
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     root = Tk()
     my_font = tkFont.Font(family='Arial',size=10,weight =tkFont.BOLD)
     root.title = "LS router"
-    my_name = 'D'
+    my_name = 'C'
     #my_ip = '172.19.39.53'
     my_ip = '192.168.199.205'
     Graph = LSGraph()
