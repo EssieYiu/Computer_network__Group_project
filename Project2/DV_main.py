@@ -13,7 +13,7 @@ neighbour=Graph.get_allNeighbour(my_name)
 changeable=Graph.get_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable)
-my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
+#my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
 
 my_thread=[]
 lock=threading.RLock()
