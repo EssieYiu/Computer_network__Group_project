@@ -9,9 +9,8 @@ import time
 my_ip="192.168.199.131"
 my_name='A'
 Graph = TopoGraph()
-Graph.initialize_graph()
 neighbour=Graph.get_allNeighbour(my_name)
-changeable=Graph.node_changeable_route(my_ip)
+changeable=Graph.get_changeable_route(my_ip)
 print("changeable route:",changeable)
 my_node = Node(my_name,my_ip,neighbour,changeable)
 my_node.neighbour={'192.168.199.102':34,'192.168.199.205':34}
@@ -177,7 +176,7 @@ name_hint.grid(row=5,column=0,sticky=tk.W)
 
 #---------------------------------------前台---------------------------------------
 window=tk.Toplevel(height=600,width=300)  #前台
-window.title('Host - Message')
+window.title('Client - Message')
 
 s_feedback=tk.Text(window,height=20) #最大的显示窗口
 s_feedback.pack(fill=tk.X)   
