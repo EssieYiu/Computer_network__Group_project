@@ -69,7 +69,7 @@ class router:
             if message[2] == self.ip:
                 print("Receive message from",message[1],'debug:',fhost)
                 print(message[3])
-                rtn_msg = "Receive message from "+message[1]+message[3]
+                rtn_msg = "Receive message from "+message[1]+':'+message[3]
             else:
                 print("Help forward message from",message[1],"to",message[2])
                 rtn_msg = "Help forward message from "+message[1]+" to "+message[2]
@@ -142,6 +142,13 @@ class router:
                     print("I can not send broadcast info to",node,"because it doesn't exist")
                 else:
                     self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
+                if self.down_status == True:
+                    print("I am down, broadcast one more info")
+                    route_info = '1 '+node+' '+self.name+' '+str(self.cost[node])+' '+str(TTL)
+                    if self.name_to_ip[node] == "":
+                        print("I can not send broadcast info to",node,"because it doesn't exist")
+                    else:
+                        self.sck_output.sendto(route_info.encode(),(self.name_to_ip[node],RECVPORT))
         print("Broadcast my route info")
 
     #only change its own topo and neighbour info,
