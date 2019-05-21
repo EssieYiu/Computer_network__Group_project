@@ -80,7 +80,7 @@ class Node(object):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
         #index=IP.index(fhost)
         #fname=ALL[index]
-        #omessage=data.decode()
+        omessage=data.decode()
         tup=self.unpack_message(data)   #把收到的数据decode以及split返回一个tup
         tmp_name=tup[1]
         tmp_index=ALL.index(tmp_name)
@@ -110,7 +110,7 @@ class Node(object):
         #接收到的是邻居发来的DV信息
         #elif omessage[0]=='0':
         elif tup[0]=='0':            
-            DVneighbour=tup[2]
+            DVneighbour=json.loads(omessage[1:])
             self.DV_neighbour[tmp_index]=DVneighbour
             print("\n* Received DV message from "+tmp_name+' '+tmp_ip+'\n'+'DVneighbour: '+str(DVneighbour)+'\n')
             self.recompute_DV()
@@ -183,7 +183,7 @@ class Node(object):
     #交换DV信息
     #需要周期性调用
     def send_DV(self):
-        DVinfo=self.DV
+        DVinfo=json.dumps(self.DV)
         for neigh in self.neighbour.keys():
             #给每一位邻居发送自己的DV信息
             self.sck_output.sendto(('0 '+self.name+' '+DVinfo).encode(),(neigh,RECVPORT))
