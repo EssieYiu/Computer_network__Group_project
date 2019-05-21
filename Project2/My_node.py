@@ -66,25 +66,30 @@ class Node(object):
            return "Error: cannot reach the destination!\n\n"
         else:
             self.sck_output.sendto(packed_message,(nextIP,RECVPORT))
-            towhere="* Message: "+message+"\n* To:"+dest+" "+destIP+'\n\n'
-            first="* Firstly, send message to next node "+nextNode+": \n"+nextIP+'\n'
+            towhere="* Message: "+message+"\n* To:"+dest+" "+destIP+'\n'
+            first="* Firstly, send message to next node "+nextNode+": \n"+nextIP+'\n\n'
             if destIP!=nextIP:
-                return first+towhere
-                print(first+towhere)
+                return towhere+first
+                print(towhere+first)
             else:
-                return towhere
-                print(towhere)
+                return (towhere+'\n')
+                print(towhere+'\n')
            
 
     def recv(self):
         data,(fhost,fport)=self.sck_input.recvfrom(BUFSIZE)
         #index=IP.index(fhost)
         #fname=ALL[index]
-        omessage=data.decode()
-       
+        #omessage=data.decode()
+        tup=self.unpack_message(data)   #把收到的数据decode以及split返回一个tup
+        tmp_name=tup[1]
+        tmp_index=ALL.index(tmp_name)
+        tmp_ip=IP[tmp_index]
+
         #接收到的是message
-        if omessage[0]=='1':           
-            tup=self.unpack_message(omessage)
+        #if omessage[0]=='1':
+        if tup[0]=='1':           
+            #tup=self.unpack_message(omessage)
             message=tup[3]
             destIP=tup[2]
             srcIP=tup[1]
@@ -99,29 +104,22 @@ class Node(object):
                 #查路由表，转发
                 nextIP=self.table[destIP]
                 self.sck_output.sendto(data,(nextIP,RECVPORT))
-                print('\n* Help sent message\n '+ 'Src: '+srcIP+' Dest: '+destIP+'\n\n')
-                return (1,'* Help sent message\n '+ 'Src: '+src_name+' Dest: '+dest_name+'\n\n')
+                print('\n* Help forward message\n '+ 'Src: '+srcIP+' Dest: '+destIP+'\n\n')
+                return (1,'* Help forward message\n '+ 'Src: '+src_name+' Dest: '+dest_name+'\n\n')
 
         #接收到的是邻居发来的DV信息
-        elif omessage[0]=='0':
-            tup=omessage.split(' ',2)
+        #elif omessage[0]=='0':
+        elif tup[0]=='0':            
             DVneighbour=json.loads(tup[2])
-            tmp_name=tup[1]
-            tmp_index=ALL.index(tmp_name)
-            tmp_ip=IP[tmp_index]
             self.DV_neighbour[tmp_index]=DVneighbour
             print("\n* Received DV message from "+tmp_name+' '+tmp_ip+'\n'+'DVneighbour: '+str(DVneighbour)+'\n')
-            self.
-            _DV()
+            self.recompute_DV()
             return(2,"")
 
-
         #接收到的是邻居发来的link cost改变,更新self.neighbour
-        elif omessage[0]=='2':
-            tup=omessage.split(' ',2)
-            tmp_name=tup[1]
-            tmp_index=ALL.index(tmp_name)
-            tmp_ip=IP[tmp_index]
+        #elif omessage[0]=='2':
+        elif tup[0]=='2':
+            #tup=omessage.split(' ',2)
             new_weight=int(tup[2])    #获得新的权重 ！！
             print("new_weight",new_weight)
             self.neighbour[tmp_ip]=new_weight    #更新
@@ -130,22 +128,18 @@ class Node(object):
             return(3,"New local link cost to"+tmp_name)
    
         #接收到邻居发来的down
-        elif omessage[0]=='3':
-            tup=omessage.split(' ',1)
-            tmp_name=tup[1]
-            tmp_index=ALL.index(tmp_name)
-            tmp_ip=IP[tmp_index]
+        #elif omessage[0]=='3':
+        elif tup[0]=='3':
+            #tup=omessage.split(' ',1)
             self.neighbour[tmp_ip]=INFINITE
             print("\n* Neighbour "+tmp_name+" is down!\n")
             self.recompute_DV()
             return(3,"Neighbour "+tmp_name+" is down!")
 
         #接收到邻居发来的recover
-        elif omessage[0]=='4':
-            tup=omessage.split(' ',2)
-            tmp_name=tup[1]
-            tmp_index=ALL.index(tmp_name)
-            tmp_ip=IP[tmp_index]
+        #elif omessage[0]=='4':
+        elif tup[0]=='4':
+            #tup=omessage.split(' ',2)     
             new_weight=int(tup[2])    #获得新的权重 ！！      
             print("new_weight",new_weight)
             self.neighbour[tmp_ip]=new_weight    #到这个邻居的cost 更新
@@ -175,6 +169,8 @@ class Node(object):
             #change=True
             self.DV[key] = value #add 将修改的value值写回去
             self.table[key]=next #目的地，下一跳节点变化   
+            if value>=INFINITE:
+                self.table[key]='None'
 
         #if change==True:
         print("* My DV has changed!")
@@ -203,7 +199,8 @@ class Node(object):
 
     def unpack_message(self,message):
         #解读消息
-        tup = (message).split(' ',3)
+        message_decoded=message.decode()
+        tup = message_decoded.split(' ')
         return tup
 
     #仅仅修改了路径权重和通知邻居，没有调用重新计算DV的函数
@@ -241,4 +238,5 @@ class Node(object):
         print("* Recover!")
         print('my DV after recover',self.DV)
         print('my_neighbour',self.neighbour)
+
 
