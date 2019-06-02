@@ -16,11 +16,11 @@
 
 |字段1|字段2|字段3|字段4|意义|
 |-----|----|-----|-----|----|
-|0|name|DV|/|接受到了名字为name邻居的DV|
-|1|src_ip|dst_ip|message|接收到了有意义的信息|
-|2|name|new_weight|/|“感知”到了路径的变化，实际上是修改了路径权重的邻居告诉它|
-|3|name|/|/|名字为name的邻居发来的down信息|
-|4|name|new_weight|/|名字为name的邻居发来的recover信息|
+|0|name|DV|/|名字为name邻居的DV|
+|1|src_ip|dst_ip|message|这是一条从src到dst的客户发的信息|
+|2|name|new_weight|/|到名字为name邻居结点的链路代价改变|
+|3|name|/|/|名字为name的邻居down信息|
+|4|name|new_weight|/|名字为name的邻居recover信息，包含到它的新链路代价|
 
 
 ### LS（如果有时间）
